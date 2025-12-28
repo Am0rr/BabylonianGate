@@ -23,4 +23,14 @@ public class SoldierService : ISoldierService
     {
         throw new NotImplementedException();
     }
+
+    public async Task<string> DeleteAsync(Guid id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<SoldierResponse?> GetSoldierByIdAsync(Guid id)
+    {
+        throw new NotImplementedException();
+    }
 }

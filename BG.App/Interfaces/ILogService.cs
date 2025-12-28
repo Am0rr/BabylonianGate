@@ -7,4 +7,5 @@ namespace BG.App.Interfaces;
 public interface ILogService
 {
     Task<(Guid? Id, string Error)> CreateAsync(CreateLogRequest request);
+    Task<LogResponse?> GetLogByIdAsync(Guid id);
 }
