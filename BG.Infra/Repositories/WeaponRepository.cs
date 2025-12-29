@@ -41,11 +41,4 @@ public class WeaponRepository : IWeaponRepository
     {
         _context.Weapons.Update(item);
     }
-
-    public async Task<Guid> ChangeStatusAsync(Weapon item)
-    {
-        _context.Weapons.Update(item);
-
-        return item.Id;
-    }
 }
