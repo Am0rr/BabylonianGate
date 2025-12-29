@@ -20,6 +20,11 @@ public class WeaponRepository : IWeaponRepository
         return await _context.Weapons.AsNoTracking().ToListAsync();
     }
 
+    public async Task<Weapon?> GetByIdAsync(Guid id)
+    {
+        return await _context.Weapons.FindAsync(id);
+    }
+
     public async Task<Guid> AddAsync(Weapon item)
     {
         await _context.Weapons.AddAsync(item);

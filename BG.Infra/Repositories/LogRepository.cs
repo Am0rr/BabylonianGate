@@ -21,6 +21,11 @@ public class LogRepository : ILogRepository
         return await _context.OperationLogs.AsNoTracking().ToListAsync();
     }
 
+    public async Task<OperationLog?> GetByIdAsync(Guid id)
+    {
+        return await _context.OperationLogs.FindAsync(id);
+    }
+
     public async Task<Guid> AddAsync(OperationLog item)
     {
         await _context.AddAsync(item);

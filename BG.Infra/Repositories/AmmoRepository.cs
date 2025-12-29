@@ -19,6 +19,11 @@ public class AmmoRepository : IAmmoRepository
         return await _context.AmmoCrates.AsNoTracking().ToListAsync();
     }
 
+    public async Task<AmmoCrate?> GetByIdAsync(Guid id)
+    {
+        return await _context.AmmoCrates.FindAsync(id);
+    }
+
     public async Task<Guid> AddAsync(AmmoCrate item)
     {
         await _context.AmmoCrates.AddAsync(item);

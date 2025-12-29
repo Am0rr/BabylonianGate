@@ -20,6 +20,11 @@ public class SoldierRepository : ISoldierRepository
         return await _context.Soldiers.AsNoTracking().ToListAsync();
     }
 
+    public async Task<Soldier?> GetByIdAsync(Guid id)
+    {
+        return await _context.Soldiers.FindAsync(id);
+    }
+
     public async Task<Guid> AddAsync(Soldier item)
     {
         await _context.AddAsync(item);
