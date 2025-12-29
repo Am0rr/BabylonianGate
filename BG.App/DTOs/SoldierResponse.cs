@@ -6,5 +6,5 @@ public record SoldierResponse(
     Guid Id,
     string FirstName,
     string LastName,
-    Rank Rank
+    string Rank
 );

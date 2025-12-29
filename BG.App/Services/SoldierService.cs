@@ -2,6 +2,8 @@
 using BG.App.DTOs;
 using BG.App.Interfaces;
 using BG.Domain.Interfaces;
+using BG.Domain.Entities;
+using BG.Domain.Enums;
 
 namespace BG.App.Services;
 
@@ -16,21 +18,136 @@ public class SoldierService : ISoldierService
 
     public async Task<(Guid? Id, string Error)> CreateAsync(CreateSoldierRequest request)
     {
-        throw new NotImplementedException();
+        if (!Enum.IsDefined(typeof(Rank), request.Rank))
+        {
+            return (null, "Invalid Rank value.");
+        }
+
+        var (soldier, error) = Soldier.Create(
+            request.FirstName,
+            request.LastName,
+            (Rank)request.Rank
+        );
+
+        if (soldier is null)
+        {
+            return (null, error);
+        }
+
+        await _unitOfWork.Soldiers.AddAsync(soldier);
+
+        var (log, _) = OperationLog.Create("Create", $"Recruited soldier {soldier.LastName}", soldier.Id);
+
+        if (log != null)
+        {
+            await _unitOfWork.Logs.AddAsync(log);
+        }
+
+        await _unitOfWork.CompleteAsync();
+
+        return (soldier.Id, string.Empty);
     }
 
     public async Task<string> UpdateAsync(UpdateSoldierRequest request)
     {
-        throw new NotImplementedException();
+        var soldier = await _unitOfWork.Soldiers.GetByIdAsync(request.Id);
+
+        if (soldier is null)
+        {
+            return "Soldier not found"; ;
+        }
+
+        if (!Enum.IsDefined(typeof(Rank), request.Rank))
+        {
+            return "Invalid Rank value";
+        }
+
+        try
+        {
+            if (soldier.FirstName != request.FirstName || soldier.LastName != request.LastName)
+            {
+                soldier.UpdateName(request.FirstName, request.LastName);
+            }
+
+            var newRank = (Rank)request.Rank;
+            if (soldier.Rank != newRank)
+            {
+                soldier.UpdateRank(newRank);
+            }
+
+            _unitOfWork.Soldiers.Update(soldier);
+
+            var (log, _) = OperationLog.Create("Update", $"Updated soldier {soldier.LastName}", soldier.Id);
+
+            if (log != null)
+            {
+                await _unitOfWork.Logs.AddAsync(log);
+            }
+
+            await _unitOfWork.CompleteAsync();
+
+            return string.Empty;
+        }
+        catch (ArgumentException ex)
+        {
+            return ex.Message;
+        }
     }
 
     public async Task<string> DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var soldier = await _unitOfWork.Soldiers.GetByIdAsync(id);
+
+        if (soldier is null)
+        {
+            return "Soldier not found"; ;
+        }
+
+
+
+        try
+        {
+            _unitOfWork.Soldiers.Delete(soldier);
+
+            var (log, _) = OperationLog.Create("Delete", $"Discharged soldier {soldier.LastName}", soldier.Id);
+
+            await _unitOfWork.CompleteAsync();
+
+            return string.Empty;
+        }
+
+        catch (ArgumentException ex)
+        {
+            return ex.Message;
+        }
     }
 
     public async Task<SoldierResponse?> GetSoldierByIdAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var soldier = await _unitOfWork.Soldiers.GetByIdAsync(id);
+
+        if (soldier is null)
+        {
+            return null;
+        }
+
+        return new SoldierResponse(
+            soldier.Id,
+            soldier.FirstName,
+            soldier.LastName,
+            soldier.Rank.ToString()
+        );
+    }
+
+    public async Task<List<SoldierResponse>> GetAllAsync()
+    {
+        var soldiers = await _unitOfWork.Soldiers.GetAllAsync();
+
+        return soldiers.Select(s => new SoldierResponse(
+            s.Id,
+            s.FirstName,
+            s.LastName,
+            s.Rank.ToString()
+        )).ToList();
     }
 }
