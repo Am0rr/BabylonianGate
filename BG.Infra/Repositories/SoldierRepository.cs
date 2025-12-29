@@ -32,17 +32,13 @@ public class SoldierRepository : ISoldierRepository
         return item.Id;
     }
 
-    public async Task<Guid> DeleteAsync(Soldier item)
+    public void Delete(Soldier item)
     {
         _context.Remove(item);
-
-        return item.Id;
     }
 
-    public async Task<Guid> UpdateAsync(Soldier item)
+    public void Update(Soldier item)
     {
         _context.Update(item);
-
-        return item.Id;
     }
 }

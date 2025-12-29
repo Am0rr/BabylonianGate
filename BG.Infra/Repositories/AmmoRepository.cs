@@ -31,18 +31,14 @@ public class AmmoRepository : IAmmoRepository
         return item.Id;
     }
 
-    public async Task<Guid> DeleteAsync(AmmoCrate item)
+    public void Delete(AmmoCrate item)
     {
         _context.AmmoCrates.Remove(item);
-
-        return item.Id;
     }
 
-    public async Task<Guid> UpdateAsync(AmmoCrate item)
+    public void Update(AmmoCrate item)
     {
         _context.AmmoCrates.Update(item);
-
-        return item.Id;
     }
 
 }
