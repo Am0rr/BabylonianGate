@@ -54,7 +54,7 @@ public class SoldierService : ISoldierService
 
         if (soldier is null)
         {
-            return "Soldier not found"; ;
+            return "Soldier not found";
         }
 
         if (!Enum.IsDefined(typeof(Rank), request.Rank))
@@ -103,13 +103,23 @@ public class SoldierService : ISoldierService
             return "Soldier not found"; ;
         }
 
+        var hasWeapon = await _unitOfWork.Weapons.HasAnyBySoldierIdAsync(id);
 
+        if (hasWeapon)
+        {
+            return "Cannot delete soldier because they still have assigned weapons. Return weapons to storage first.";
+        }
 
         try
         {
             _unitOfWork.Soldiers.Delete(soldier);
 
             var (log, _) = OperationLog.Create("Delete", $"Discharged soldier {soldier.LastName}", soldier.Id);
+
+            if (log != null)
+            {
+                await _unitOfWork.Logs.AddAsync(log);
+            }
 
             await _unitOfWork.CompleteAsync();
 
