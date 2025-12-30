@@ -41,4 +41,9 @@ public class WeaponRepository : IWeaponRepository
     {
         _context.Weapons.Update(item);
     }
+
+    public async Task<bool> HasAnyBySoldierIdAsync(Guid soldierId)
+    {
+        return await _context.Weapons.AnyAsync(w => w.IssuedToSoldierId == soldierId);
+    }
 }
