@@ -5,6 +5,6 @@ namespace BG.Domain.Interfaces;
 
 public interface ISoldierRepository : IRepository<Soldier>
 {
-    Task<Guid> DeleteAsync(Soldier item);
-    Task<Guid> UpdateAsync(Soldier item);
+    void Delete(Soldier item);
+    void Update(Soldier item);
 }

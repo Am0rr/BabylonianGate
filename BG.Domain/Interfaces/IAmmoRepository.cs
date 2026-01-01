@@ -5,6 +5,6 @@ namespace BG.Domain.Interfaces;
 
 public interface IAmmoRepository : IRepository<AmmoCrate>
 {
-    Task<Guid> DeleteAsync(AmmoCrate item);
-    Task<Guid> UpdateAsync(AmmoCrate item);
+    void Delete(AmmoCrate item);
+    void Update(AmmoCrate item);
 }
