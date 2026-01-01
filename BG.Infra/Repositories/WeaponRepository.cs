@@ -20,6 +20,11 @@ public class WeaponRepository : IWeaponRepository
         return await _context.Weapons.AsNoTracking().ToListAsync();
     }
 
+    public async Task<Weapon?> GetByIdAsync(Guid id)
+    {
+        return await _context.Weapons.FindAsync(id);
+    }
+
     public async Task<Guid> AddAsync(Weapon item)
     {
         await _context.Weapons.AddAsync(item);
@@ -27,24 +32,18 @@ public class WeaponRepository : IWeaponRepository
         return item.Id;
     }
 
-    public async Task<Guid> DeleteAsync(Weapon item)
+    public void Delete(Weapon item)
     {
         _context.Weapons.Remove(item);
-
-        return item.Id;
     }
 
-    public async Task<Guid> UpdateAsync(Weapon item)
+    public void Update(Weapon item)
     {
         _context.Weapons.Update(item);
-
-        return item.Id;
     }
 
-    public async Task<Guid> ChangeStatusAsync(Weapon item)
+    public async Task<bool> HasAnyBySoldierIdAsync(Guid soldierId)
     {
-        _context.Weapons.Update(item);
-
-        return item.Id;
+        return await _context.Weapons.AnyAsync(w => w.IssuedToSoldierId == soldierId);
     }
 }
