@@ -8,4 +8,5 @@ public interface ISoldierService
     Task<string> UpdateAsync(UpdateSoldierRequest request);
     Task<string> DeleteAsync(Guid id);
     Task<SoldierResponse?> GetSoldierByIdAsync(Guid id);
+    Task<List<SoldierResponse>> GetAllAsync();
 }
