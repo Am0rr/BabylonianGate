@@ -10,21 +10,21 @@ public class Soldier : Entity
 {
     public string FirstName { get; private set; } = string.Empty;
     public string LastName { get; private set; } = string.Empty;
-    public Rank Rank { get; private set; }
+    public SoldierRank Rank { get; private set; }
 
     private Soldier()
     {
 
     }
 
-    private Soldier(string firstName, string lastName, Rank rank)
+    private Soldier(string firstName, string lastName, SoldierRank rank)
     {
         FirstName = firstName;
         LastName = lastName;
         Rank = rank;
     }
 
-    public static (Soldier? Soldier, string Error) Create(string firstName, string lastName, Rank rank)
+    public static (Soldier? Soldier, string Error) Create(string firstName, string lastName, SoldierRank rank)
     {
         if (string.IsNullOrWhiteSpace(firstName))
             return (null, "First Name is required");
@@ -46,7 +46,7 @@ public class Soldier : Entity
         LastName = lastName;
     }
 
-    public void UpdateRank(Rank newRank)
+    public void UpdateRank(SoldierRank newRank)
     {
         Rank = newRank;
     }

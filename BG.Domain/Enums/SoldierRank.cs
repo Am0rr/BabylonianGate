@@ -2,7 +2,7 @@
 
 namespace BG.Domain.Enums;
 
-public enum Rank
+public enum SoldierRank
 {
     Private = 1,    // Рядовой
     Sergeant = 2,   // Сержант

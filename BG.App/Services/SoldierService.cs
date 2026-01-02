@@ -18,7 +18,7 @@ public class SoldierService : ISoldierService
 
     public async Task<(Guid? Id, string Error)> CreateAsync(CreateSoldierRequest request)
     {
-        if (!Enum.IsDefined(typeof(Rank), request.Rank))
+        if (!Enum.IsDefined(typeof(SoldierRank), request.Rank))
         {
             return (null, "Invalid Rank value.");
         }
@@ -26,7 +26,7 @@ public class SoldierService : ISoldierService
         var (soldier, error) = Soldier.Create(
             request.FirstName,
             request.LastName,
-            (Rank)request.Rank
+            (SoldierRank)request.Rank
         );
 
         if (soldier is null)
@@ -57,7 +57,7 @@ public class SoldierService : ISoldierService
             return "Soldier not found";
         }
 
-        if (!Enum.IsDefined(typeof(Rank), request.Rank))
+        if (!Enum.IsDefined(typeof(SoldierRank), request.Rank))
         {
             return "Invalid Rank value";
         }
@@ -69,7 +69,7 @@ public class SoldierService : ISoldierService
                 soldier.UpdateName(request.FirstName, request.LastName);
             }
 
-            var newRank = (Rank)request.Rank;
+            var newRank = (SoldierRank)request.Rank;
             if (soldier.Rank != newRank)
             {
                 soldier.UpdateRank(newRank);
@@ -100,7 +100,7 @@ public class SoldierService : ISoldierService
 
         if (soldier is null)
         {
-            return "Soldier not found"; ;
+            return "Soldier not found";
         }
 
         var hasWeapon = await _unitOfWork.Weapons.HasAnyBySoldierIdAsync(id);
