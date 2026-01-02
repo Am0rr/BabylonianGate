@@ -17,7 +17,7 @@ public class Weapon : Entity
     private Weapon()
     {
     }
-    private Weapon(string codeName, string serialNumber, WeaponType type, string caliber)
+    private Weapon(string codeName, string serialNumber, string caliber, WeaponType type)
     {
         Codename = codeName;
         SerialNumber = serialNumber;
@@ -27,7 +27,7 @@ public class Weapon : Entity
         Status = WeaponStatus.InStorage;
     }
 
-    public static (Weapon? Weapon, string Error) Create(string codeName, string serialNumber, WeaponType type, string caliber)
+    public static (Weapon? Weapon, string Error) Create(string codeName, string serialNumber, string caliber, WeaponType type)
     {
         if (string.IsNullOrWhiteSpace(serialNumber))
             return (null, "Serial Number is required");
@@ -36,7 +36,7 @@ public class Weapon : Entity
         if (string.IsNullOrWhiteSpace(caliber))
             return (null, "Caliber is required");
 
-        return (new Weapon(codeName, serialNumber, type, caliber), string.Empty);
+        return (new Weapon(codeName, serialNumber, caliber, type), string.Empty);
     }
 
     public void Fire(int rounds)

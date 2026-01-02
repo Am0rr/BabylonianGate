@@ -9,4 +9,5 @@ public interface IWeaponService
     Task<string> DeleteAsync(Guid id);
     Task<string> UpdateAsync(UpdateWeaponRequest request);
     Task<WeaponResponse?> GetWeaponByIdAsync(Guid id);
+    Task<List<WeaponResponse>> GetAllAsync();
 }

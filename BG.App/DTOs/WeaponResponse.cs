@@ -4,6 +4,6 @@ namespace BG.App.DTOs;
 
 public record WeaponResponse(
     Guid Id,
-    WeaponStatus Status,
+    string Status,
     double? Condition
 );
