@@ -8,5 +8,5 @@ public record UpdateSoldierRequest(
     Guid Id,
     string FirstName,
     string LastName,
-    int Rank
+    string Rank
 );
