@@ -1,13 +1,16 @@
 using BG.App.DTOs;
-using BG.Domain.Entities;
 
 namespace BG.App.Interfaces;
 
 public interface IWeaponService
 {
     Task<(Guid? Id, string Error)> CreateAsync(CreateWeaponRequest request);
-    Task<string> DeleteAsync(Guid id);
-    Task<string> UpdateAsync(UpdateWeaponRequest request);
-    Task<WeaponResponse?> GetWeaponByIdAsync(Guid id);
+    Task<string> DeleteAsync(Guid weaponId);
+    Task<string> UpdateDetailsAsync(UpdateWeaponDetailsRequest request);
+    Task<string> IssueWeaponAsync(Guid weaponId, Guid soldierId);
+    Task<string> ReturnToStorageAsync(Guid weaponId, int roundsFired);
+    Task<string> SendToMaintenanceAsync(Guid weaponId);
+    Task<string> ReportMissingAsync(Guid weaponId);
+    Task<WeaponResponse?> GetWeaponByIdAsync(Guid weaponId);
     Task<List<WeaponResponse>> GetAllAsync();
 }

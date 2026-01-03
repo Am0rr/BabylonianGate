@@ -48,40 +48,66 @@ public class WeaponService : IWeaponService
         return (weapon.Id, string.Empty);
     }
 
-    public async Task<string> UpdateAsync(UpdateWeaponRequest request)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<string> DeleteAsync(Guid id)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<WeaponResponse?> GetWeaponByIdAsync(Guid id)
+    public async Task<string> UpdateDetailsAsync(UpdateWeaponDetailsRequest request)
     {
-        var weapon = await _unitOfWork.Weapons.GetByIdAsync(id);
+        throw new NotImplementedException();
+    }
+
+    public async Task<string> IssueWeaponAsync(Guid weaponId, Guid soldierId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<string> ReturnToStorageAsync(Guid weaponId, int roundsFired)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<string> SendToMaintenanceAsync(Guid weaponId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<string> ReportMissingAsync(Guid weaponId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<WeaponResponse?> GetWeaponByIdAsync(Guid weaponId)
+    {
+        var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
 
         if (weapon is null)
         {
             return null;
         }
 
-        return new WeaponResponse(
-            weapon.Id,
-            weapon.Status.ToString(),
-            weapon.Condition
-        );
+        return MapToResponse(weapon);
     }
 
     public async Task<List<WeaponResponse>> GetAllAsync()
     {
         var weapons = await _unitOfWork.Weapons.GetAllAsync();
 
-        return weapons.Select(w => new WeaponResponse(
+        return weapons.Select(MapToResponse).ToList();
+    }
+
+    private static WeaponResponse MapToResponse(Weapon w)
+    {
+        return new WeaponResponse(
             w.Id,
+            w.Codename,
+            w.SerialNumber,
+            w.Caliber,
+            w.Type.ToString(),
             w.Status.ToString(),
-            w.Condition
-        )).ToList();
+            w.Condition,
+            w.IssuedToSoldierId
+        );
     }
 }
