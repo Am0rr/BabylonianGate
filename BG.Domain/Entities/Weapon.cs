@@ -39,16 +39,16 @@ public class Weapon : Entity
         return (new Weapon(codeName, serialNumber, caliber, type), string.Empty);
     }
 
-    public void ApplyWear(int rounds)
+    public void ApplyWear(int roundsFired)
     {
-        if (rounds < 0) throw new ArgumentException("Rounds cannot be negative.");
-        if (rounds == 0) return;
+        if (roundsFired < 0) throw new ArgumentException("Rounds cannot be negative.");
+        if (roundsFired == 0) return;
         if (Status != WeaponStatus.Deployed)
         {
             throw new InvalidOperationException($"Cannot apply wear. Weapon status is '{Status}', but must be 'Deployed'.");
         }
 
-        var damage = rounds * 0.1;
+        var damage = roundsFired * 0.1;
         Condition = Math.Max(0, Condition - damage);
     }
 

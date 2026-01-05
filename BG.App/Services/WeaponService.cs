@@ -48,34 +48,214 @@ public class WeaponService : IWeaponService
         return (weapon.Id, string.Empty);
     }
 
-    public async Task<string> DeleteAsync(Guid id)
+    public async Task<string> DeleteAsync(Guid weaponId)
     {
-        throw new NotImplementedException();
+        var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
+
+        if (weapon is null)
+        {
+            return "Weapon not found";
+        }
+
+        if (weapon.Status == WeaponStatus.Deployed)
+        {
+            return "Cannot delete weapon because it is currently issued to a soldier. Return it to storage first.";
+        }
+
+        try
+        {
+            _unitOfWork.Weapons.Delete(weapon);
+
+            var (log, _) = OperationLog.Create("Delete", $"Deleted weapon {weapon.Codename}, with SN {weapon.SerialNumber}", weapon.Id);
+
+            if (log != null)
+            {
+                await _unitOfWork.Logs.AddAsync(log);
+            }
+
+            await _unitOfWork.CompleteAsync();
+
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
     }
 
     public async Task<string> UpdateDetailsAsync(UpdateWeaponDetailsRequest request)
     {
-        throw new NotImplementedException();
+        var weapon = await _unitOfWork.Weapons.GetByIdAsync(request.Id);
+
+        if (weapon is null)
+        {
+            return "Weapon not found";
+        }
+
+        try
+        {
+            if (request.Codename != weapon.Codename)
+            {
+                weapon.ChangeCodeName(request.Codename);
+            }
+
+            if (request.SerialNumber != weapon.SerialNumber)
+            {
+                weapon.CorrectSerialNumber(request.SerialNumber);
+            }
+
+            if (request.Caliber != weapon.Caliber)
+            {
+                weapon.CorrectCaliber(request.Caliber);
+            }
+
+            _unitOfWork.Weapons.Update(weapon);
+
+            var (log, _) = OperationLog.Create("Update", $"Updated details for {weapon.Codename}", weapon.Id);
+
+            if (log != null)
+            {
+                await _unitOfWork.Logs.AddAsync(log);
+            }
+
+            await _unitOfWork.CompleteAsync();
+
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
     }
 
     public async Task<string> IssueWeaponAsync(Guid weaponId, Guid soldierId)
     {
-        throw new NotImplementedException();
+        var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
+
+        if (weapon is null)
+        {
+            return "Weapon not found";
+        }
+
+        var soldier = await _unitOfWork.Soldiers.GetByIdAsync(soldierId);
+
+        if (soldier is null)
+        {
+            return "Soldier not found";
+        }
+
+        try
+        {
+            weapon.IssueTo(soldier.Id);
+
+            _unitOfWork.Weapons.Update(weapon);
+
+            var (log, _) = OperationLog.Create("Update", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber} \n - Has been issued to a soldier with {soldierId} ID", weapon.Id);
+
+            if (log != null)
+            {
+                await _unitOfWork.Logs.AddAsync(log);
+            }
+
+            await _unitOfWork.CompleteAsync();
+
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
     }
 
     public async Task<string> ReturnToStorageAsync(Guid weaponId, int roundsFired)
     {
-        throw new NotImplementedException();
+        var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
+
+        if (weapon is null)
+        {
+            return "Weapon not found";
+        }
+
+        try
+        {
+            weapon.ApplyWear(roundsFired);
+
+            weapon.ReturnToStorage();
+
+            _unitOfWork.Weapons.Update(weapon);
+
+            var (log, _) = OperationLog.Create("Update", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been returned to storage with {weapon.Condition} condition", weapon.Id);
+
+            if (log != null)
+            {
+                await _unitOfWork.Logs.AddAsync(log);
+            }
+
+            await _unitOfWork.CompleteAsync();
+
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
     }
 
     public async Task<string> SendToMaintenanceAsync(Guid weaponId)
     {
-        throw new NotImplementedException();
+        var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
+
+        if (weapon is null)
+        {
+            return "Weapon not found";
+        }
+
+        try
+        {
+            weapon.SendToMaintenance();
+
+            _unitOfWork.Weapons.Update(weapon);
+
+            var (log, _) = OperationLog.Create("Update", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been send to maintenance", weapon.Id);
+
+            if (log != null)
+            {
+                await _unitOfWork.Logs.AddAsync(log);
+            }
+
+            await _unitOfWork.CompleteAsync();
+
+            return string.Empty;
+        }
+        catch (Exception ex)
+        {
+            return ex.Message;
+        }
     }
 
     public async Task<string> ReportMissingAsync(Guid weaponId)
     {
-        throw new NotImplementedException();
+        var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
+
+        if (weapon is null)
+        {
+            return "Weapon not found";
+        }
+
+        weapon.MarkAsMissing();
+
+        _unitOfWork.Weapons.Update(weapon);
+
+        var (log, _) = OperationLog.Create("Update", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been marked as {weapon.Status}", weapon.Id);
+
+        if (log != null)
+        {
+            await _unitOfWork.Logs.AddAsync(log);
+        }
+
+        await _unitOfWork.CompleteAsync();
+
+        return string.Empty;
     }
 
     public async Task<WeaponResponse?> GetWeaponByIdAsync(Guid weaponId)
