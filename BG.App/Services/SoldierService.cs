@@ -86,7 +86,7 @@ public class SoldierService : ISoldierService
 
             return string.Empty;
         }
-        catch (ArgumentException ex)
+        catch (Exception ex)
         {
             return ex.Message;
         }
@@ -124,7 +124,7 @@ public class SoldierService : ISoldierService
             return string.Empty;
         }
 
-        catch (ArgumentException ex)
+        catch (Exception ex)
         {
             return ex.Message;
         }
