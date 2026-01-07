@@ -18,17 +18,37 @@ public class AmmoService : IAmmoService
         throw new NotImplementedException();
     }
 
-    public async Task<string> UpdateAsync(UpdateAmmoRequest request)
+    public async Task<string> DeleteAsync(Guid crateId)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<string> DeleteAsync(Guid id)
+    public async Task<string> UpdateDetailsAsync(UpdateAmmoDetailsRequest request)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<AmmoResponse?> GetCrateByIdAsync(Guid id)
+    public async Task<string> IssueAmmoAsync(Guid crateId, int amount)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<string> RestockAsync(Guid crateId, int amount)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<string> AuditInventoryAsync(Guid crateId, int actualQuantity)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<AmmoResponse?> GetCrateByIdAsync(Guid crateId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<List<AmmoResponse>> GetAllAsync()
     {
         throw new NotImplementedException();
     }
