@@ -17,7 +17,7 @@ public class Weapon : Entity
     private Weapon()
     {
     }
-    private Weapon(string codeName, string serialNumber, WeaponType type, string caliber)
+    private Weapon(string codeName, string serialNumber, string caliber, WeaponType type)
     {
         Codename = codeName;
         SerialNumber = serialNumber;
@@ -27,25 +27,28 @@ public class Weapon : Entity
         Status = WeaponStatus.InStorage;
     }
 
-    public static (Weapon? Weapon, string Error) Create(string codeName, string serialNumber, WeaponType type, string caliber)
+    public static (Weapon? Weapon, string Error) Create(string codeName, string serialNumber, string caliber, WeaponType type)
     {
         if (string.IsNullOrWhiteSpace(serialNumber))
             return (null, "Serial Number is required");
         if (string.IsNullOrWhiteSpace(codeName))
-            return (null, "Code Number is required");
+            return (null, "Code Name is required");
         if (string.IsNullOrWhiteSpace(caliber))
             return (null, "Caliber is required");
 
-        return (new Weapon(codeName, serialNumber, type, caliber), string.Empty);
+        return (new Weapon(codeName, serialNumber, caliber, type), string.Empty);
     }
 
-    public void Fire(int rounds)
+    public void ApplyWear(int roundsFired)
     {
-        if (rounds <= 0) throw new ArgumentException("Rounds must be positive.");
-        if (Status == WeaponStatus.Maintenance) throw new InvalidOperationException("Cannot fire weapon in maintenance.");
-        if (Status == WeaponStatus.InStorage) throw new InvalidOperationException("Cannot fire weapon that is in storage.");
+        if (roundsFired < 0) throw new ArgumentException("Rounds cannot be negative.");
+        if (roundsFired == 0) return;
+        if (Status != WeaponStatus.Deployed)
+        {
+            throw new InvalidOperationException($"Cannot apply wear. Weapon status is '{Status}', but must be 'Deployed'.");
+        }
 
-        var damage = rounds * 0.1;
+        var damage = roundsFired * 0.1;
         Condition = Math.Max(0, Condition - damage);
     }
 
@@ -84,26 +87,6 @@ public class Weapon : Entity
         Caliber = correctedCaliber;
     }
 
-    public void ChangeStatus(WeaponStatus newStatus)
-    {
-        if (newStatus == WeaponStatus.Deployed && Condition <= 0)
-        {
-            throw new InvalidOperationException("Cannot activate a broken weapon.");
-        }
-
-        if (Status == WeaponStatus.Maintenance && newStatus == WeaponStatus.InStorage)
-        {
-            Condition = 100.0;
-        }
-
-        if (Status == WeaponStatus.Missing && newStatus == WeaponStatus.Deployed)
-        {
-            throw new InvalidOperationException("Cannot deploy missing weapon. Return it to storage first.");
-        }
-
-        Status = newStatus;
-    }
-
     private void EnsureEditable()
     {
         if (Status != WeaponStatus.InStorage)
@@ -120,7 +103,7 @@ public class Weapon : Entity
         if (Condition <= 0)
             throw new InvalidOperationException("Cannot issue broken weapon.");
 
-        Status = WeaponStatus.Active;
+        Status = WeaponStatus.Deployed;
         IssuedToSoldierId = soldierId;
     }
 
@@ -144,7 +127,7 @@ public class Weapon : Entity
 
     public void SendToMaintenance()
     {
-        if (Status == WeaponStatus.Active)
+        if (Status == WeaponStatus.Deployed)
             throw new InvalidOperationException("Cannot send active weapon to maintenance. Return from soldier first.");
 
         if (Status == WeaponStatus.Missing)
