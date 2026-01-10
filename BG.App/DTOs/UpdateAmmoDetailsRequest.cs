@@ -3,7 +3,8 @@ using BG.Domain.Enums;
 namespace BG.App.DTOs;
 
 public record UpdateAmmoDetailsRequest(
-    Guid Id,
+    Guid CrateId,
+    string LotNumber,
     string Caliber,
     string Type
 );

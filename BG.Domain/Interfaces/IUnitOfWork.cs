@@ -5,7 +5,7 @@ namespace BG.Domain.Interfaces;
 public interface IUnitOfWork : IDisposable
 {
     IWeaponRepository Weapons { get; }
-    IAmmoRepository Ammo { get; }
+    IAmmoRepository Crates { get; }
     ILogRepository Logs { get; }
     ISoldierRepository Soldiers { get; }
 

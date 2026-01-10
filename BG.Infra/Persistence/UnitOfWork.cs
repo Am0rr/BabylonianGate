@@ -10,7 +10,7 @@ public class UnitOfWork : IUnitOfWork
     private readonly BabylonianDbContext _context;
 
     public IWeaponRepository Weapons { get; private set; }
-    public IAmmoRepository Ammo { get; private set; }
+    public IAmmoRepository Crates { get; private set; }
     public ILogRepository Logs { get; private set; }
     public ISoldierRepository Soldiers { get; private set; }
 
@@ -19,7 +19,7 @@ public class UnitOfWork : IUnitOfWork
         _context = context;
 
         Weapons = new WeaponRepository(_context);
-        Ammo = new AmmoRepository(_context);
+        Crates = new AmmoRepository(_context);
         Logs = new LogRepository(_context);
         Soldiers = new SoldierRepository(_context);
     }

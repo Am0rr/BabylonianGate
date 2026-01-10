@@ -3,7 +3,8 @@ using BG.Domain.Enums;
 namespace BG.App.DTOs;
 
 public record CreateAmmoRequest(
+    string LotNumber,
     string Caliber,
-    AmmoType Type,
-    int Quantity
+    int Quantity,
+    string Type
 );

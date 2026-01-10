@@ -5,6 +5,7 @@ namespace BG.Domain.Entities;
 
 public class AmmoCrate : Entity
 {
+    public string LotNumber { get; private set; } = string.Empty;
     public string Caliber { get; private set; } = string.Empty;
     public AmmoType Type { get; private set; }
     public int Quantity { get; private set; }
@@ -13,14 +14,15 @@ public class AmmoCrate : Entity
     {
 
     }
-    private AmmoCrate(string caliber, AmmoType type, int quantity)
+    private AmmoCrate(string lotNumber, string caliber, int quantity, AmmoType type)
     {
+        LotNumber = lotNumber;
         Caliber = caliber;
         Type = type;
         Quantity = quantity;
     }
 
-    public static (AmmoCrate? Crate, string Error) Create(string caliber, AmmoType type, int quantity)
+    public static (AmmoCrate? Crate, string Error) Create(string lotNumber, string caliber, int quantity, AmmoType type)
     {
         if (string.IsNullOrWhiteSpace(caliber))
             return (null, "Caliber is required.");
@@ -29,7 +31,7 @@ public class AmmoCrate : Entity
             return (null, "Ammo quantity cannot be negative.");
 
 
-        return (new AmmoCrate(caliber, type, quantity), string.Empty);
+        return (new AmmoCrate(lotNumber, caliber, quantity, type), string.Empty);
     }
 
     public void Issue(int amount)
@@ -72,5 +74,15 @@ public class AmmoCrate : Entity
         if (Type == newType) return;
 
         Type = newType;
+    }
+
+    public void CorrectLotNumber(string newLotNumber)
+    {
+        if (string.IsNullOrWhiteSpace(newLotNumber))
+            throw new ArgumentException("Lot Number cannot be empty.");
+
+        if (LotNumber == newLotNumber) return;
+
+        LotNumber = newLotNumber;
     }
 }
