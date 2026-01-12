@@ -6,6 +6,7 @@ public record LogResponse(
     Guid Id,
     string Action,
     string Details,
+    DateTime CreatedAt,
     Guid? RelatedEntityId,
-    DateTime CreatedAt
+    Guid? OperatorId
 );

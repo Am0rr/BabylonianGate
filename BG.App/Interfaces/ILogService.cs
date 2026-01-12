@@ -6,6 +6,7 @@ namespace BG.App.Interfaces;
 
 public interface ILogService
 {
-    Task<(Guid? Id, string Error)> CreateAsync(CreateLogRequest request);
     Task<LogResponse?> GetLogByIdAsync(Guid id);
+    Task<List<LogResponse>> GetHistoryByEntityIdAsync(Guid entityId);
+    Task<List<LogResponse>> GetRecentLogsAsync(int count);
 }

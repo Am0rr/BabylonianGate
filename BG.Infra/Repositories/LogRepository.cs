@@ -1,5 +1,4 @@
-
-
+using System.Linq.Expressions;
 using BG.Domain.Entities;
 using BG.Domain.Interfaces;
 using BG.Infra.Persistence;
@@ -18,7 +17,7 @@ public class LogRepository : ILogRepository
 
     public async Task<List<OperationLog>> GetAllAsync()
     {
-        return await _context.OperationLogs.AsNoTracking().ToListAsync();
+        throw new NotSupportedException("Fetching ALL logs is not allowed due to performance. Use GetRecentAsync instead.");
     }
 
     public async Task<OperationLog?> GetByIdAsync(Guid id)
@@ -31,5 +30,15 @@ public class LogRepository : ILogRepository
         await _context.AddAsync(item);
 
         return item.Id;
+    }
+
+    public async Task<List<OperationLog>> FindAsync(Expression<Func<OperationLog, bool>> predicate)
+    {
+        return await _context.OperationLogs.AsNoTracking().Where(predicate).ToListAsync();
+    }
+
+    public async Task<List<OperationLog>> GetRecentAsync(int count)
+    {
+        return await _context.OperationLogs.AsNoTracking().OrderByDescending(x => x.CreatedAt).Take(count).ToListAsync();
     }
 }

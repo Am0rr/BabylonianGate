@@ -10,11 +10,17 @@ public class OperationLogConfiguration : IEntityTypeConfiguration<OperationLog>
     {
         builder.ToTable("OperationLogs");
 
-        builder.HasKey(w => w.Id);
+        builder.HasKey(l => l.Id);
 
-        builder.Property(w => w.Action).IsRequired().HasMaxLength(50);
+        builder.Property(l => l.Action).IsRequired().HasMaxLength(50);
+        builder.Property(l => l.Details).IsRequired().HasMaxLength(500);
 
-        builder.Property(w => w.RelatedEntityId).IsRequired(false);
-        builder.Property(w => w.Details).IsRequired().HasMaxLength(500);
+        builder.Property(l => l.RelatedEntityId).IsRequired(false);
+        builder.Property(l => l.CreatedAt).IsRequired();
+        builder.Property(l => l.OperatorId).IsRequired(false);
+
+        builder.HasIndex(l => l.RelatedEntityId);
+        builder.HasIndex(l => l.CreatedAt);
+        builder.HasIndex(l => l.OperatorId);
     }
 }
