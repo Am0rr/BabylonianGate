@@ -1,4 +1,3 @@
-
 using BG.App.DTOs;
 using BG.App.Interfaces;
 using BG.Domain.Interfaces;
@@ -18,15 +17,15 @@ public class SoldierService : ISoldierService
 
     public async Task<(Guid? Id, string Error)> CreateAsync(CreateSoldierRequest request)
     {
-        if (!Enum.IsDefined(typeof(Rank), request.Rank))
+        if (!Enum.TryParse<SoldierRank>(request.Rank, true, out var rank))
         {
-            return (null, "Invalid Rank value.");
+            return (null, $"Invalid Rank value: '{request.Rank}'. Allowed values: {string.Join(", ", Enum.GetNames(typeof(SoldierRank)))}");
         }
 
         var (soldier, error) = Soldier.Create(
             request.FirstName,
             request.LastName,
-            (Rank)request.Rank
+            rank
         );
 
         if (soldier is null)
@@ -57,9 +56,9 @@ public class SoldierService : ISoldierService
             return "Soldier not found";
         }
 
-        if (!Enum.IsDefined(typeof(Rank), request.Rank))
+        if (!Enum.TryParse<SoldierRank>(request.Rank, true, out var rank))
         {
-            return "Invalid Rank value";
+            return $"Invalid Rank value: '{request.Rank}'. Allowed values: {string.Join(", ", Enum.GetNames(typeof(SoldierRank)))}";
         }
 
         try
@@ -69,10 +68,9 @@ public class SoldierService : ISoldierService
                 soldier.UpdateName(request.FirstName, request.LastName);
             }
 
-            var newRank = (Rank)request.Rank;
-            if (soldier.Rank != newRank)
+            if (soldier.Rank != rank)
             {
-                soldier.UpdateRank(newRank);
+                soldier.UpdateRank(rank);
             }
 
             _unitOfWork.Soldiers.Update(soldier);
@@ -88,7 +86,7 @@ public class SoldierService : ISoldierService
 
             return string.Empty;
         }
-        catch (ArgumentException ex)
+        catch (Exception ex)
         {
             return ex.Message;
         }
@@ -100,7 +98,7 @@ public class SoldierService : ISoldierService
 
         if (soldier is null)
         {
-            return "Soldier not found"; ;
+            return "Soldier not found";
         }
 
         var hasWeapon = await _unitOfWork.Weapons.HasAnyBySoldierIdAsync(id);
@@ -126,7 +124,7 @@ public class SoldierService : ISoldierService
             return string.Empty;
         }
 
-        catch (ArgumentException ex)
+        catch (Exception ex)
         {
             return ex.Message;
         }

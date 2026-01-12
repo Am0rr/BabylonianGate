@@ -1,11 +1,10 @@
-
+using BG.Domain.Enums;
 
 namespace BG.App.DTOs;
 
-public record AmmoResponse(
-    Guid Id,
+public record UpdateAmmoDetailsRequest(
+    Guid CrateId,
     string LotNumber,
     string Caliber,
-    int Quantity,
     string Type
 );

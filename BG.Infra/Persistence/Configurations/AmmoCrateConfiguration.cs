@@ -10,11 +10,14 @@ public class AmmoCrateConfiguration : IEntityTypeConfiguration<AmmoCrate>
     {
         builder.ToTable("AmmoCrates");
 
-        builder.HasKey(w => w.Id);
+        builder.HasKey(a => a.Id);
 
-        builder.Property(w => w.Quantity).IsRequired();
+        builder.Property(a => a.LotNumber).IsRequired().HasMaxLength(50);
+        builder.HasIndex(a => a.LotNumber);
 
-        builder.Property(w => w.Caliber).IsRequired().HasMaxLength(50);
-        builder.Property(w => w.Type).HasConversion<string>().HasMaxLength(20);
+        builder.Property(a => a.Quantity).IsRequired();
+
+        builder.Property(a => a.Caliber).IsRequired().HasMaxLength(50);
+        builder.Property(a => a.Type).HasConversion<string>().HasMaxLength(20);
     }
 }
