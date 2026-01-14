@@ -36,6 +36,11 @@ namespace BG.Infra.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("LotNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
@@ -45,6 +50,8 @@ namespace BG.Infra.Migrations
                         .HasColumnType("character varying(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LotNumber");
 
                     b.ToTable("AmmoCrates", (string)null);
                 });
@@ -68,10 +75,19 @@ namespace BG.Infra.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<Guid?>("OperatorId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("RelatedEntityId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("OperatorId");
+
+                    b.HasIndex("RelatedEntityId");
 
                     b.ToTable("OperationLogs", (string)null);
                 });
@@ -101,6 +117,8 @@ namespace BG.Infra.Migrations
                         .HasColumnType("character varying(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LastName");
 
                     b.ToTable("Soldiers", (string)null);
                 });
@@ -140,10 +158,14 @@ namespace BG.Infra.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IssuedToSoldierId");
 
                     b.HasIndex("SerialNumber")
                         .IsUnique();

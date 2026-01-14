@@ -12,9 +12,12 @@ public class SoldierConfiguration : IEntityTypeConfiguration<Soldier>
 
         builder.HasKey(s => s.Id);
 
+        builder.Property(s => s.CreatedAt).IsRequired();
         builder.Property(s => s.FirstName).IsRequired().HasMaxLength(50);
         builder.Property(s => s.LastName).IsRequired().HasMaxLength(50);
 
-        builder.Property(s => s.Rank).HasConversion<string>().HasMaxLength(20);
+        builder.Property(s => s.Rank).IsRequired().HasConversion<string>().HasMaxLength(20);
+
+        builder.HasIndex(s => s.LastName);
     }
 }

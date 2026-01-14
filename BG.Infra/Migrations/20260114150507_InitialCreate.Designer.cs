@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BG.Infra.Migrations
 {
     [DbContext(typeof(BabylonianDbContext))]
-    [Migration("20251226150425_UpdateSoldiersTable")]
-    partial class UpdateSoldiersTable
+    [Migration("20260114150507_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,6 +39,11 @@ namespace BG.Infra.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("LotNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
@@ -48,6 +53,8 @@ namespace BG.Infra.Migrations
                         .HasColumnType("character varying(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LotNumber");
 
                     b.ToTable("AmmoCrates", (string)null);
                 });
@@ -71,10 +78,19 @@ namespace BG.Infra.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<Guid?>("OperatorId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid?>("RelatedEntityId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("OperatorId");
+
+                    b.HasIndex("RelatedEntityId");
 
                     b.ToTable("OperationLogs", (string)null);
                 });
@@ -90,18 +106,24 @@ namespace BG.Infra.Migrations
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
-                    b.Property<int>("Rank")
-                        .HasColumnType("integer");
+                    b.Property<string>("Rank")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Soldiers");
+                    b.HasIndex("LastName");
+
+                    b.ToTable("Soldiers", (string)null);
                 });
 
             modelBuilder.Entity("BG.Domain.Entities.Weapon", b =>
@@ -139,10 +161,14 @@ namespace BG.Infra.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IssuedToSoldierId");
 
                     b.HasIndex("SerialNumber")
                         .IsUnique();
