@@ -92,26 +92,43 @@ public class WeaponService : IWeaponService
             return "Weapon not found";
         }
 
+        bool hasChanges = false;
+        var logDetails = new List<string>();
+
         try
         {
             if (request.Codename != weapon.Codename)
             {
+                string oldCodeName = weapon.Codename;
                 weapon.ChangeCodeName(request.Codename);
+                logDetails.Add($"Codename: '{oldCodeName}' -> '{request.Codename}'");
+                hasChanges = true;
             }
 
             if (request.SerialNumber != weapon.SerialNumber)
             {
+                string oldSerialNumber = weapon.SerialNumber;
                 weapon.CorrectSerialNumber(request.SerialNumber);
+                logDetails.Add($"Serial Number: '{oldSerialNumber}' -> '{request.SerialNumber}'");
+                hasChanges = true;
             }
 
             if (request.Caliber != weapon.Caliber)
             {
+                string oldCaliber = weapon.Caliber;
                 weapon.CorrectCaliber(request.Caliber);
+                logDetails.Add($"Caliber: '{oldCaliber}' -> '{request.Caliber}'");
+                hasChanges = true;
+            }
+
+            if (!hasChanges)
+            {
+                return string.Empty;
             }
 
             _unitOfWork.Weapons.Update(weapon);
 
-            var (log, _) = OperationLog.Create("Update", $"Updated details for {weapon.Codename}", weapon.Id);
+            var (log, _) = OperationLog.Create("Update", $"Updated details: {string.Join(", ", logDetails)}", weapon.Id);
 
             if (log != null)
             {
@@ -150,7 +167,7 @@ public class WeaponService : IWeaponService
 
             _unitOfWork.Weapons.Update(weapon);
 
-            var (log, _) = OperationLog.Create("Update", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber} \n - Has been issued to a soldier with {soldierId} ID", weapon.Id);
+            var (log, _) = OperationLog.Create("Issue", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber} \n - Has been issued to a soldier with {soldierId} ID", weapon.Id);
 
             if (log != null)
             {
@@ -184,7 +201,7 @@ public class WeaponService : IWeaponService
 
             _unitOfWork.Weapons.Update(weapon);
 
-            var (log, _) = OperationLog.Create("Update", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been returned to storage with {weapon.Condition} condition", weapon.Id);
+            var (log, _) = OperationLog.Create("Return", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been returned to storage with {weapon.Condition} condition", weapon.Id);
 
             if (log != null)
             {
@@ -216,7 +233,7 @@ public class WeaponService : IWeaponService
 
             _unitOfWork.Weapons.Update(weapon);
 
-            var (log, _) = OperationLog.Create("Update", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been send to maintenance", weapon.Id);
+            var (log, _) = OperationLog.Create("Maintenance", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been sent to maintenance", weapon.Id);
 
             if (log != null)
             {
@@ -246,7 +263,7 @@ public class WeaponService : IWeaponService
 
         _unitOfWork.Weapons.Update(weapon);
 
-        var (log, _) = OperationLog.Create("Update", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been marked as {weapon.Status}", weapon.Id);
+        var (log, _) = OperationLog.Create("Missing", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been marked as {weapon.Status}", weapon.Id);
 
         if (log != null)
         {

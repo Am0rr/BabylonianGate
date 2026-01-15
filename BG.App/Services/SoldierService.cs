@@ -61,21 +61,36 @@ public class SoldierService : ISoldierService
             return $"Invalid Rank value: '{request.Rank}'. Allowed values: {string.Join(", ", Enum.GetNames(typeof(SoldierRank)))}";
         }
 
+        bool hasChanges = false;
+        var logDetails = new List<string>();
+
         try
         {
             if (soldier.FirstName != request.FirstName || soldier.LastName != request.LastName)
             {
+                string oldFirstName = soldier.FirstName;
+                string oldLastName = soldier.LastName;
                 soldier.UpdateName(request.FirstName, request.LastName);
+                logDetails.Add($"First and Last name: '{oldFirstName}' '{oldLastName}' -> '{request.FirstName}' '{request.LastName}'");
+                hasChanges = true;
             }
 
             if (soldier.Rank != rank)
             {
+                string oldRank = soldier.Rank.ToString();
                 soldier.UpdateRank(rank);
+                logDetails.Add($"Rank: '{oldRank}' -> '{request.Rank}'");
+                hasChanges = true;
+            }
+
+            if (!hasChanges)
+            {
+                return string.Empty;
             }
 
             _unitOfWork.Soldiers.Update(soldier);
 
-            var (log, _) = OperationLog.Create("Update", $"Updated soldier {soldier.LastName}", soldier.Id);
+            var (log, _) = OperationLog.Create("Update", $"Updated soldier {soldier.LastName}. Changes: {string.Join(", ", logDetails)}", soldier.Id);
 
             if (log != null)
             {
@@ -139,23 +154,23 @@ public class SoldierService : ISoldierService
             return null;
         }
 
-        return new SoldierResponse(
-            soldier.Id,
-            soldier.FirstName,
-            soldier.LastName,
-            soldier.Rank.ToString()
-        );
+        return MapToResponse(soldier);
     }
 
     public async Task<List<SoldierResponse>> GetAllAsync()
     {
         var soldiers = await _unitOfWork.Soldiers.GetAllAsync();
 
-        return soldiers.Select(s => new SoldierResponse(
+        return soldiers.Select(MapToResponse).ToList();
+    }
+
+    private static SoldierResponse MapToResponse(Soldier s)
+    {
+        return new SoldierResponse(
             s.Id,
             s.FirstName,
             s.LastName,
             s.Rank.ToString()
-        )).ToList();
+        );
     }
 }
