@@ -1,6 +1,6 @@
 using BG.Infra;
-using BG.Infra.Persistence;
-using Microsoft.EntityFrameworkCore;
+using FluentValidation.AspNetCore;
+using BG.App;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +9,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddApplication();
+
+builder.Services.AddFluentValidationAutoValidation();
 
 var app = builder.Build();
 
