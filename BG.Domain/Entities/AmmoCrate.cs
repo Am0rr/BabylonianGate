@@ -22,16 +22,18 @@ public class AmmoCrate : Entity
         Quantity = quantity;
     }
 
-    public static (AmmoCrate? Crate, string Error) Create(string lotNumber, string caliber, int quantity, AmmoType type)
+    public static AmmoCrate Create(string lotNumber, string caliber, int quantity, AmmoType type)
     {
+        if (string.IsNullOrWhiteSpace(lotNumber))
+            throw new ArgumentException("Lot Number is required.", nameof(lotNumber));
+
         if (string.IsNullOrWhiteSpace(caliber))
-            return (null, "Caliber is required.");
+            throw new ArgumentException("Caliber is required.", nameof(caliber));
 
         if (quantity < 0)
-            return (null, "Ammo quantity cannot be negative.");
+            throw new ArgumentException("Ammo quantity cannot be negative.", nameof(quantity));
 
-
-        return (new AmmoCrate(lotNumber, caliber, quantity, type), string.Empty);
+        return new AmmoCrate(lotNumber, caliber, quantity, type);
     }
 
     public void Issue(int amount)

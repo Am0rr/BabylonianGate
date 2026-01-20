@@ -23,14 +23,13 @@ public class OperationLog : Entity
         OperatorId = operatorId;
     }
 
-    public static (OperationLog? OperationLog, string Error) Create(string action, string details, Guid? relatedEntityId = null, Guid? operatorId = null)
+    public static OperationLog Create(string action, string details, Guid? relatedEntityId = null, Guid? operatorId = null)
     {
         if (string.IsNullOrWhiteSpace(action))
-            return (null, "Log action cannot be empty.");
+            throw new ArgumentException("Log action cannot be empty.", nameof(action));
         if (string.IsNullOrWhiteSpace(details))
-            return (null, "Log details cannot be empty");
+            throw new ArgumentException("Log details cannot be empty", nameof(details));
 
-
-        return (new OperationLog(action, details, relatedEntityId, operatorId), string.Empty);
+        return new OperationLog(action, details, relatedEntityId, operatorId);
     }
 }

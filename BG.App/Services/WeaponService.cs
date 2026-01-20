@@ -15,264 +15,187 @@ public class WeaponService : IWeaponService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<(Guid? Id, string Error)> CreateAsync(CreateWeaponRequest request)
+    public async Task<Guid> CreateAsync(CreateWeaponRequest request)
     {
-        if (!Enum.TryParse<WeaponType>(request.Type, true, out var weaponType))
-        {
-            return (null, $"Invalid weapon type: '{request.Type}'. Allowed values: {string.Join(", ", Enum.GetNames(typeof(WeaponType)))}");
-        }
+        var type = Enum.Parse<WeaponType>(request.Type, ignoreCase: true);
 
-        var (weapon, error) = Weapon.Create(
+        var weapon = Weapon.Create(
             request.CodeName,
             request.SerialNumber,
             request.Caliber,
-            weaponType
+            type
         );
-
-        if (weapon is null)
-        {
-            return (null, error);
-        }
 
         await _unitOfWork.Weapons.AddAsync(weapon);
 
-        var (log, _) = OperationLog.Create("Create", $"Claimed weapon {weapon.Codename}, with SN {weapon.SerialNumber}", weapon.Id);
-
-        if (log != null)
-        {
-            await _unitOfWork.Logs.AddAsync(log);
-        }
+        var log = OperationLog.Create("Create", $"Claimed weapon {weapon.Codename}, with SN {weapon.SerialNumber}", weapon.Id);
+        await _unitOfWork.Logs.AddAsync(log);
 
         await _unitOfWork.CompleteAsync();
 
-        return (weapon.Id, string.Empty);
+        return weapon.Id;
     }
 
-    public async Task<string> DeleteAsync(Guid weaponId)
+    public async Task DeleteAsync(Guid weaponId)
     {
         var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
 
         if (weapon is null)
         {
-            return "Weapon not found";
+            throw new KeyNotFoundException($"Weapon with ID {weaponId} not found.");
         }
 
         if (weapon.Status == WeaponStatus.Deployed)
         {
-            return "Cannot delete weapon because it is currently issued to a soldier. Return it to storage first.";
+            throw new InvalidOperationException("Cannot delete weapon because it is currently issued to a soldier. Return it to storage first.");
         }
 
-        try
-        {
-            _unitOfWork.Weapons.Delete(weapon);
+        _unitOfWork.Weapons.Delete(weapon);
 
-            var (log, _) = OperationLog.Create("Delete", $"Deleted weapon {weapon.Codename}, with SN {weapon.SerialNumber}", weapon.Id);
+        var log = OperationLog.Create("Delete", $"Deleted weapon {weapon.Codename}, with SN {weapon.SerialNumber}", weapon.Id);
+        await _unitOfWork.Logs.AddAsync(log);
 
-            if (log != null)
-            {
-                await _unitOfWork.Logs.AddAsync(log);
-            }
 
-            await _unitOfWork.CompleteAsync();
-
-            return string.Empty;
-        }
-        catch (Exception ex)
-        {
-            return ex.Message;
-        }
+        await _unitOfWork.CompleteAsync();
     }
 
-    public async Task<string> UpdateDetailsAsync(UpdateWeaponDetailsRequest request)
+    public async Task UpdateDetailsAsync(UpdateWeaponDetailsRequest request)
     {
         var weapon = await _unitOfWork.Weapons.GetByIdAsync(request.Id);
 
         if (weapon is null)
         {
-            return "Weapon not found";
+            throw new KeyNotFoundException($"Weapon with ID {request.Id} not found.");
         }
 
         bool hasChanges = false;
         var logDetails = new List<string>();
 
-        try
+        if (request.Codename != weapon.Codename)
         {
-            if (request.Codename != weapon.Codename)
-            {
-                string oldCodeName = weapon.Codename;
-                weapon.ChangeCodeName(request.Codename);
-                logDetails.Add($"Codename: '{oldCodeName}' -> '{request.Codename}'");
-                hasChanges = true;
-            }
-
-            if (request.SerialNumber != weapon.SerialNumber)
-            {
-                string oldSerialNumber = weapon.SerialNumber;
-                weapon.CorrectSerialNumber(request.SerialNumber);
-                logDetails.Add($"Serial Number: '{oldSerialNumber}' -> '{request.SerialNumber}'");
-                hasChanges = true;
-            }
-
-            if (request.Caliber != weapon.Caliber)
-            {
-                string oldCaliber = weapon.Caliber;
-                weapon.CorrectCaliber(request.Caliber);
-                logDetails.Add($"Caliber: '{oldCaliber}' -> '{request.Caliber}'");
-                hasChanges = true;
-            }
-
-            if (!hasChanges)
-            {
-                return string.Empty;
-            }
-
-            _unitOfWork.Weapons.Update(weapon);
-
-            var (log, _) = OperationLog.Create("Update", $"Updated details: {string.Join(", ", logDetails)}", weapon.Id);
-
-            if (log != null)
-            {
-                await _unitOfWork.Logs.AddAsync(log);
-            }
-
-            await _unitOfWork.CompleteAsync();
-
-            return string.Empty;
+            string oldCodeName = weapon.Codename;
+            weapon.ChangeCodeName(request.Codename);
+            logDetails.Add($"Codename: '{oldCodeName}' -> '{request.Codename}'");
+            hasChanges = true;
         }
-        catch (Exception ex)
+
+        if (request.SerialNumber != weapon.SerialNumber)
         {
-            return ex.Message;
+            string oldSerialNumber = weapon.SerialNumber;
+            weapon.CorrectSerialNumber(request.SerialNumber);
+            logDetails.Add($"Serial Number: '{oldSerialNumber}' -> '{request.SerialNumber}'");
+            hasChanges = true;
         }
+
+        if (request.Caliber != weapon.Caliber)
+        {
+            string oldCaliber = weapon.Caliber;
+            weapon.CorrectCaliber(request.Caliber);
+            logDetails.Add($"Caliber: '{oldCaliber}' -> '{request.Caliber}'");
+            hasChanges = true;
+        }
+
+        if (!hasChanges)
+        {
+            return;
+        }
+
+        _unitOfWork.Weapons.Update(weapon);
+
+        var log = OperationLog.Create("Update", $"Updated details: {string.Join(", ", logDetails)}", weapon.Id);
+        await _unitOfWork.Logs.AddAsync(log);
+
+
+        await _unitOfWork.CompleteAsync();
+
     }
 
-    public async Task<string> IssueWeaponAsync(Guid weaponId, Guid soldierId)
+    public async Task IssueWeaponAsync(Guid weaponId, Guid soldierId)
     {
         var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
 
         if (weapon is null)
         {
-            return "Weapon not found";
+            throw new KeyNotFoundException($"Weapon with ID {weaponId} not found.");
         }
 
         var soldier = await _unitOfWork.Soldiers.GetByIdAsync(soldierId);
 
         if (soldier is null)
         {
-            return "Soldier not found";
+            throw new KeyNotFoundException($"Soldier with ID {soldierId} not found.");
         }
 
-        try
-        {
-            weapon.IssueTo(soldier.Id);
+        weapon.IssueTo(soldier.Id);
 
-            _unitOfWork.Weapons.Update(weapon);
+        _unitOfWork.Weapons.Update(weapon);
 
-            var (log, _) = OperationLog.Create("Issue", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber} \n - Has been issued to a soldier with {soldierId} ID", weapon.Id);
+        var log = OperationLog.Create("Issue", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber} \n - Has been issued to a soldier with {soldierId} ID", weapon.Id);
+        await _unitOfWork.Logs.AddAsync(log);
 
-            if (log != null)
-            {
-                await _unitOfWork.Logs.AddAsync(log);
-            }
 
-            await _unitOfWork.CompleteAsync();
-
-            return string.Empty;
-        }
-        catch (Exception ex)
-        {
-            return ex.Message;
-        }
+        await _unitOfWork.CompleteAsync();
     }
 
-    public async Task<string> ReturnToStorageAsync(Guid weaponId, int roundsFired)
+    public async Task ReturnToStorageAsync(Guid weaponId, int roundsFired)
     {
         var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
 
         if (weapon is null)
         {
-            return "Weapon not found";
+            throw new KeyNotFoundException($"Weapon with ID {weaponId} not found.");
         }
 
-        try
-        {
-            weapon.ApplyWear(roundsFired);
+        weapon.ApplyWear(roundsFired);
 
-            weapon.ReturnToStorage();
+        weapon.ReturnToStorage();
 
-            _unitOfWork.Weapons.Update(weapon);
+        _unitOfWork.Weapons.Update(weapon);
 
-            var (log, _) = OperationLog.Create("Return", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been returned to storage with {weapon.Condition} condition", weapon.Id);
+        var log = OperationLog.Create("Return", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been returned to storage with {weapon.Condition} condition", weapon.Id);
+        await _unitOfWork.Logs.AddAsync(log);
 
-            if (log != null)
-            {
-                await _unitOfWork.Logs.AddAsync(log);
-            }
 
-            await _unitOfWork.CompleteAsync();
-
-            return string.Empty;
-        }
-        catch (Exception ex)
-        {
-            return ex.Message;
-        }
+        await _unitOfWork.CompleteAsync();
     }
 
-    public async Task<string> SendToMaintenanceAsync(Guid weaponId)
+    public async Task SendToMaintenanceAsync(Guid weaponId)
     {
         var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
 
         if (weapon is null)
         {
-            return "Weapon not found";
+            throw new KeyNotFoundException($"Weapon with ID {weaponId} not found.");
         }
 
-        try
-        {
-            weapon.SendToMaintenance();
+        weapon.SendToMaintenance();
 
-            _unitOfWork.Weapons.Update(weapon);
+        _unitOfWork.Weapons.Update(weapon);
 
-            var (log, _) = OperationLog.Create("Maintenance", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been sent to maintenance", weapon.Id);
+        var log = OperationLog.Create("Maintenance", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been sent to maintenance", weapon.Id);
+        await _unitOfWork.Logs.AddAsync(log);
 
-            if (log != null)
-            {
-                await _unitOfWork.Logs.AddAsync(log);
-            }
-
-            await _unitOfWork.CompleteAsync();
-
-            return string.Empty;
-        }
-        catch (Exception ex)
-        {
-            return ex.Message;
-        }
+        await _unitOfWork.CompleteAsync();
     }
 
-    public async Task<string> ReportMissingAsync(Guid weaponId)
+    public async Task ReportMissingAsync(Guid weaponId)
     {
         var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
 
         if (weapon is null)
         {
-            return "Weapon not found";
+            throw new KeyNotFoundException($"Weapon with ID {weaponId} not found.");
         }
 
         weapon.MarkAsMissing();
 
         _unitOfWork.Weapons.Update(weapon);
 
-        var (log, _) = OperationLog.Create("Missing", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been marked as {weapon.Status}", weapon.Id);
+        var log = OperationLog.Create("Missing", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber}\n - Has been marked as {weapon.Status}", weapon.Id);
+        await _unitOfWork.Logs.AddAsync(log);
 
-        if (log != null)
-        {
-            await _unitOfWork.Logs.AddAsync(log);
-        }
 
         await _unitOfWork.CompleteAsync();
-
-        return string.Empty;
     }
 
     public async Task<WeaponResponse?> GetWeaponByIdAsync(Guid weaponId)

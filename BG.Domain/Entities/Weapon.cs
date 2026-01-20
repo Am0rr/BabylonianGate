@@ -27,16 +27,16 @@ public class Weapon : Entity
         Status = WeaponStatus.InStorage;
     }
 
-    public static (Weapon? Weapon, string Error) Create(string codeName, string serialNumber, string caliber, WeaponType type)
+    public static Weapon Create(string codeName, string serialNumber, string caliber, WeaponType type)
     {
         if (string.IsNullOrWhiteSpace(serialNumber))
-            return (null, "Serial Number is required");
+            throw new ArgumentException("Serial Number is required", nameof(serialNumber));
         if (string.IsNullOrWhiteSpace(codeName))
-            return (null, "Code Name is required");
+            throw new ArgumentException("Code Name is required", nameof(codeName));
         if (string.IsNullOrWhiteSpace(caliber))
-            return (null, "Caliber is required");
+            throw new ArgumentException("Caliber is required", nameof(caliber));
 
-        return (new Weapon(codeName, serialNumber, caliber, type), string.Empty);
+        return new Weapon(codeName, serialNumber, caliber, type);
     }
 
     public void ApplyWear(int roundsFired)

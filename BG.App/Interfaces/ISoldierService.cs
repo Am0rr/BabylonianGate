@@ -4,9 +4,9 @@ namespace BG.App.Interfaces;
 
 public interface ISoldierService
 {
-    Task<(Guid? Id, string Error)> CreateAsync(CreateSoldierRequest request);
-    Task<string> UpdateAsync(UpdateSoldierRequest request);
-    Task<string> DeleteAsync(Guid id);
-    Task<SoldierResponse?> GetSoldierByIdAsync(Guid id);
+    Task<Guid> CreateAsync(CreateSoldierRequest request);
+    Task UpdateAsync(UpdateSoldierRequest request);
+    Task DeleteAsync(Guid soldierId);
+    Task<SoldierResponse?> GetSoldierByIdAsync(Guid soldierId);
     Task<List<SoldierResponse>> GetAllAsync();
 }

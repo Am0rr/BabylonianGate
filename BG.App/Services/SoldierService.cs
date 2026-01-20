@@ -15,139 +15,98 @@ public class SoldierService : ISoldierService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<(Guid? Id, string Error)> CreateAsync(CreateSoldierRequest request)
+    public async Task<Guid> CreateAsync(CreateSoldierRequest request)
     {
-        if (!Enum.TryParse<SoldierRank>(request.Rank, true, out var rank))
-        {
-            return (null, $"Invalid Rank value: '{request.Rank}'. Allowed values: {string.Join(", ", Enum.GetNames(typeof(SoldierRank)))}");
-        }
+        var rank = Enum.Parse<SoldierRank>(request.Rank, ignoreCase: true);
 
-        var (soldier, error) = Soldier.Create(
+        var soldier = Soldier.Create(
             request.FirstName,
             request.LastName,
             rank
         );
 
-        if (soldier is null)
-        {
-            return (null, error);
-        }
-
         await _unitOfWork.Soldiers.AddAsync(soldier);
 
-        var (log, _) = OperationLog.Create("Create", $"Recruited soldier {soldier.LastName}", soldier.Id);
-
-        if (log != null)
-        {
-            await _unitOfWork.Logs.AddAsync(log);
-        }
+        var log = OperationLog.Create("Create", $"Recruited soldier {soldier.LastName}", soldier.Id);
+        await _unitOfWork.Logs.AddAsync(log);
 
         await _unitOfWork.CompleteAsync();
 
-        return (soldier.Id, string.Empty);
+        return soldier.Id;
     }
 
-    public async Task<string> UpdateAsync(UpdateSoldierRequest request)
+    public async Task UpdateAsync(UpdateSoldierRequest request)
     {
         var soldier = await _unitOfWork.Soldiers.GetByIdAsync(request.Id);
 
         if (soldier is null)
         {
-            return "Soldier not found";
+            throw new KeyNotFoundException($"Soldier with ID {request.Id} not found.");
         }
 
-        if (!Enum.TryParse<SoldierRank>(request.Rank, true, out var rank))
-        {
-            return $"Invalid Rank value: '{request.Rank}'. Allowed values: {string.Join(", ", Enum.GetNames(typeof(SoldierRank)))}";
-        }
+        var rank = Enum.Parse<SoldierRank>(request.Rank, ignoreCase: true);
 
         bool hasChanges = false;
         var logDetails = new List<string>();
 
-        try
+        if (soldier.FirstName != request.FirstName || soldier.LastName != request.LastName)
         {
-            if (soldier.FirstName != request.FirstName || soldier.LastName != request.LastName)
-            {
-                string oldFirstName = soldier.FirstName;
-                string oldLastName = soldier.LastName;
-                soldier.UpdateName(request.FirstName, request.LastName);
-                logDetails.Add($"First and Last name: '{oldFirstName}' '{oldLastName}' -> '{request.FirstName}' '{request.LastName}'");
-                hasChanges = true;
-            }
-
-            if (soldier.Rank != rank)
-            {
-                string oldRank = soldier.Rank.ToString();
-                soldier.UpdateRank(rank);
-                logDetails.Add($"Rank: '{oldRank}' -> '{request.Rank}'");
-                hasChanges = true;
-            }
-
-            if (!hasChanges)
-            {
-                return string.Empty;
-            }
-
-            _unitOfWork.Soldiers.Update(soldier);
-
-            var (log, _) = OperationLog.Create("Update", $"Updated soldier {soldier.LastName}. Changes: {string.Join(", ", logDetails)}", soldier.Id);
-
-            if (log != null)
-            {
-                await _unitOfWork.Logs.AddAsync(log);
-            }
-
-            await _unitOfWork.CompleteAsync();
-
-            return string.Empty;
+            string oldFirstName = soldier.FirstName;
+            string oldLastName = soldier.LastName;
+            soldier.UpdateName(request.FirstName, request.LastName);
+            logDetails.Add($"First and Last name: '{oldFirstName}' '{oldLastName}' -> '{request.FirstName}' '{request.LastName}'");
+            hasChanges = true;
         }
-        catch (Exception ex)
+
+        if (soldier.Rank != rank)
         {
-            return ex.Message;
+            string oldRank = soldier.Rank.ToString();
+            soldier.UpdateRank(rank);
+            logDetails.Add($"Rank: '{oldRank}' -> '{request.Rank}'");
+            hasChanges = true;
         }
+
+        if (!hasChanges)
+        {
+            return;
+        }
+
+        _unitOfWork.Soldiers.Update(soldier);
+
+        var log = OperationLog.Create("Update", $"Updated soldier {soldier.LastName}. Changes: {string.Join(", ", logDetails)}", soldier.Id);
+        await _unitOfWork.Logs.AddAsync(log);
+
+
+        await _unitOfWork.CompleteAsync();
     }
 
-    public async Task<string> DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid soldierId)
     {
-        var soldier = await _unitOfWork.Soldiers.GetByIdAsync(id);
+        var soldier = await _unitOfWork.Soldiers.GetByIdAsync(soldierId);
 
         if (soldier is null)
         {
-            return "Soldier not found";
+            throw new KeyNotFoundException($"Soldier with ID {soldierId} not found.");
         }
 
-        var hasWeapon = await _unitOfWork.Weapons.HasAnyBySoldierIdAsync(id);
+        var hasWeapon = await _unitOfWork.Weapons.HasAnyBySoldierIdAsync(soldierId);
 
         if (hasWeapon)
         {
-            return "Cannot delete soldier because they still have assigned weapons. Return weapons to storage first.";
+            throw new InvalidOperationException("Cannot delete soldier because they still have assigned weapons. Return weapons to storage first.");
         }
 
-        try
-        {
-            _unitOfWork.Soldiers.Delete(soldier);
+        _unitOfWork.Soldiers.Delete(soldier);
 
-            var (log, _) = OperationLog.Create("Delete", $"Discharged soldier {soldier.LastName}", soldier.Id);
+        var log = OperationLog.Create("Delete", $"Discharged soldier {soldier.LastName}", soldier.Id);
+        await _unitOfWork.Logs.AddAsync(log);
 
-            if (log != null)
-            {
-                await _unitOfWork.Logs.AddAsync(log);
-            }
-
-            await _unitOfWork.CompleteAsync();
-
-            return string.Empty;
-        }
-
-        catch (Exception ex)
-        {
-            return ex.Message;
-        }
+        await _unitOfWork.CompleteAsync();
     }
 
-    public async Task<SoldierResponse?> GetSoldierByIdAsync(Guid id)
+    public async Task<SoldierResponse?> GetSoldierByIdAsync(Guid soldierId)
     {
-        var soldier = await _unitOfWork.Soldiers.GetByIdAsync(id);
+        var soldier = await _unitOfWork.Soldiers.GetByIdAsync(soldierId);
 
         if (soldier is null)
         {

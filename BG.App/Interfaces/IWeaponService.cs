@@ -4,13 +4,13 @@ namespace BG.App.Interfaces;
 
 public interface IWeaponService
 {
-    Task<(Guid? Id, string Error)> CreateAsync(CreateWeaponRequest request);
-    Task<string> DeleteAsync(Guid weaponId);
-    Task<string> UpdateDetailsAsync(UpdateWeaponDetailsRequest request);
-    Task<string> IssueWeaponAsync(Guid weaponId, Guid soldierId);
-    Task<string> ReturnToStorageAsync(Guid weaponId, int roundsFired);
-    Task<string> SendToMaintenanceAsync(Guid weaponId);
-    Task<string> ReportMissingAsync(Guid weaponId);
+    Task<Guid> CreateAsync(CreateWeaponRequest request);
+    Task DeleteAsync(Guid weaponId);
+    Task UpdateDetailsAsync(UpdateWeaponDetailsRequest request);
+    Task IssueWeaponAsync(Guid weaponId, Guid soldierId);
+    Task ReturnToStorageAsync(Guid weaponId, int roundsFired);
+    Task SendToMaintenanceAsync(Guid weaponId);
+    Task ReportMissingAsync(Guid weaponId);
     Task<WeaponResponse?> GetWeaponByIdAsync(Guid weaponId);
     Task<List<WeaponResponse>> GetAllAsync();
 }

@@ -15,259 +15,183 @@ public class AmmoService : IAmmoService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<(Guid? Id, string Error)> CreateAsync(CreateAmmoRequest request)
+    public async Task<Guid> CreateAsync(CreateAmmoRequest request)
     {
-        if (!Enum.TryParse<AmmoType>(request.Type, out var type))
-        {
-            return (null, $"Invalid Type value: '{request.Type}'. Allowed values: {string.Join(", ", Enum.GetNames(typeof(AmmoType)))}");
-        }
+        var type = Enum.Parse<AmmoType>(request.Type, ignoreCase: true);
 
-        var (crate, error) = AmmoCrate.Create(
+        var crate = AmmoCrate.Create(
             request.LotNumber,
             request.Caliber,
             request.Quantity,
             type
         );
 
-        if (crate is null)
-        {
-            return (null, error);
-        }
-
         await _unitOfWork.Crates.AddAsync(crate);
 
-        var (log, _) = OperationLog.Create("Create", $"Registered crate Lot #{crate.LotNumber} ({crate.Caliber}, {type})", crate.Id);
+        var log = OperationLog.Create("Create", $"Registered crate Lot #{crate.LotNumber} ({crate.Caliber}, {type})", crate.Id);
+        await _unitOfWork.Logs.AddAsync(log);
 
-        if (log != null)
-        {
-            await _unitOfWork.Logs.AddAsync(log);
-        }
 
         await _unitOfWork.CompleteAsync();
 
-        return (crate.Id, string.Empty);
+        return crate.Id;
     }
 
-    public async Task<string> DeleteAsync(Guid crateId)
+    public async Task DeleteAsync(Guid crateId)
     {
         var crate = await _unitOfWork.Crates.GetByIdAsync(crateId);
 
         if (crate is null)
         {
-            return "Crate is not found";
+            throw new KeyNotFoundException($"Crate with ID {crateId} not found.");
         }
 
         if (crate.Quantity > 0)
         {
-            return "Cannot delete crate containing ammo. Issue or empty it first.";
+            throw new InvalidOperationException("Cannot delete crate containing ammo. Issue or empty it first.");
         }
 
-        try
-        {
-            _unitOfWork.Crates.Delete(crate);
+        _unitOfWork.Crates.Delete(crate);
 
-            var (log, _) = OperationLog.Create("Delete", $"Deleted crate Lot #{crate.LotNumber} ({crate.Caliber})", crate.Id);
+        var log = OperationLog.Create("Delete", $"Deleted crate Lot #{crate.LotNumber} ({crate.Caliber})", crate.Id);
+        await _unitOfWork.Logs.AddAsync(log);
 
-            if (log != null)
-            {
-                await _unitOfWork.Logs.AddAsync(log);
-            }
 
-            await _unitOfWork.CompleteAsync();
-
-            return string.Empty;
-        }
-        catch (Exception ex)
-        {
-            return ex.Message;
-        }
+        await _unitOfWork.CompleteAsync();
     }
 
-    public async Task<string> UpdateDetailsAsync(UpdateAmmoDetailsRequest request)
+    public async Task UpdateDetailsAsync(UpdateAmmoDetailsRequest request)
     {
         var crate = await _unitOfWork.Crates.GetByIdAsync(request.Id);
 
         if (crate is null)
         {
-            return "Crate is not found";
+            throw new KeyNotFoundException($"Crate with ID {request.Id} not found.");
         }
 
-        if (!Enum.TryParse<AmmoType>(request.Type, out var type))
-        {
-            return $"Invalid Type value: '{request.Type}'. Allowed values: {string.Join(", ", Enum.GetNames(typeof(AmmoType)))}";
-        }
+        var type = Enum.Parse<AmmoType>(request.Type, ignoreCase: true);
 
         bool hasChanges = false;
         var logDetails = new List<string>();
 
-        try
+        if (request.LotNumber != crate.LotNumber)
         {
-            if (request.LotNumber != crate.LotNumber)
-            {
-                string oldLotNumber = crate.LotNumber;
-                crate.CorrectLotNumber(request.LotNumber);
-                logDetails.Add($"Lot: '{oldLotNumber}' -> '{request.LotNumber}'");
-                hasChanges = true;
-            }
-
-            if (request.Caliber != crate.Caliber)
-            {
-                string oldCal = crate.Caliber;
-                crate.CorrectCaliber(request.Caliber);
-                logDetails.Add($"Caliber: '{oldCal}' -> '{request.Caliber}'");
-                hasChanges = true;
-            }
-
-            if (crate.Type != type)
-            {
-                string oldType = crate.Type.ToString();
-                crate.CorrectType(type);
-                logDetails.Add($"Type: '{oldType}' -> '{request.Type}'");
-                hasChanges = true;
-            }
-
-            if (!hasChanges)
-            {
-                return string.Empty;
-            }
-
-            _unitOfWork.Crates.Update(crate);
-
-            var (log, _) = OperationLog.Create("Update", $"Corrected details: {string.Join(", ", logDetails)}", crate.Id);
-
-            if (log != null)
-            {
-                await _unitOfWork.Logs.AddAsync(log);
-            }
-
-            await _unitOfWork.CompleteAsync();
-
-            return string.Empty;
-        }
-        catch (Exception ex)
-        {
-            return ex.Message;
+            string oldLotNumber = crate.LotNumber;
+            crate.CorrectLotNumber(request.LotNumber);
+            logDetails.Add($"Lot: '{oldLotNumber}' -> '{request.LotNumber}'");
+            hasChanges = true;
         }
 
+        if (request.Caliber != crate.Caliber)
+        {
+            string oldCal = crate.Caliber;
+            crate.CorrectCaliber(request.Caliber);
+            logDetails.Add($"Caliber: '{oldCal}' -> '{request.Caliber}'");
+            hasChanges = true;
+        }
+
+        if (crate.Type != type)
+        {
+            string oldType = crate.Type.ToString();
+            crate.CorrectType(type);
+            logDetails.Add($"Type: '{oldType}' -> '{request.Type}'");
+            hasChanges = true;
+        }
+
+        if (!hasChanges)
+        {
+            return;
+        }
+
+        _unitOfWork.Crates.Update(crate);
+
+        var log = OperationLog.Create("Update", $"Corrected details: {string.Join(", ", logDetails)}", crate.Id);
+        await _unitOfWork.Logs.AddAsync(log);
+
+        await _unitOfWork.CompleteAsync();
     }
 
-    public async Task<string> IssueAmmoAsync(IssueAmmoRequest request)
+    public async Task IssueAmmoAsync(IssueAmmoRequest request)
     {
         var crate = await _unitOfWork.Crates.GetByIdAsync(request.CrateId);
 
         if (crate is null)
         {
-            return "Crate is not found";
+            throw new KeyNotFoundException($"Crate with ID {request.CrateId} not found.");
         }
 
         var soldier = await _unitOfWork.Soldiers.GetByIdAsync(request.SoldierId);
 
         if (soldier is null)
         {
-            return "Soldier is not found";
+            throw new KeyNotFoundException($"Soldier with ID {request.SoldierId} not found.");
         }
 
-        try
-        {
-            crate.Issue(request.Amount);
+        crate.Issue(request.Amount);
 
-            _unitOfWork.Crates.Update(crate);
+        _unitOfWork.Crates.Update(crate);
 
-            string logMessage = $"Issued {request.Amount} rounds ({crate.Type}) to {soldier.LastName} {soldier.FirstName}. " +
-                            $"From Lot #{crate.LotNumber}. Remaining: {crate.Quantity}";
+        string logMessage = $"Issued {request.Amount} rounds ({crate.Type}) to {soldier.LastName} {soldier.FirstName}. " +
+                        $"From Lot #{crate.LotNumber}. Remaining: {crate.Quantity}";
 
-            var (log, _) = OperationLog.Create("Issue", logMessage, crate.Id);
+        var log = OperationLog.Create("Issue", logMessage, crate.Id);
 
-            if (log != null)
-            {
-                await _unitOfWork.Logs.AddAsync(log);
-            }
+        await _unitOfWork.Logs.AddAsync(log);
 
-            await _unitOfWork.CompleteAsync();
-
-            return string.Empty;
-        }
-        catch (Exception ex)
-        {
-            return ex.Message;
-        }
+        await _unitOfWork.CompleteAsync();
     }
 
-    public async Task<string> RestockAsync(RestockAmmoRequest request)
+    public async Task RestockAsync(RestockAmmoRequest request)
     {
         var crate = await _unitOfWork.Crates.GetByIdAsync(request.CrateId);
 
         if (crate is null)
         {
-            return "Crate is not found";
+            throw new KeyNotFoundException($"Crate with ID {request.CrateId} not found.");
         }
 
         var soldier = await _unitOfWork.Soldiers.GetByIdAsync(request.SoldierId);
 
         if (soldier is null)
         {
-            return "Soldier is not found";
+            throw new KeyNotFoundException($"Soldier with ID {request.SoldierId} not found.");
         }
 
-        try
-        {
-            crate.Restock(request.Amount);
+        crate.Restock(request.Amount);
 
-            _unitOfWork.Crates.Update(crate);
+        _unitOfWork.Crates.Update(crate);
 
-            string logMessage = $"Restocked {request.Amount} rounds ({crate.Type}) from {soldier.LastName} {soldier.FirstName}. " +
-                            $"In Lot #{crate.LotNumber}. Remaining: {crate.Quantity}";
+        string logMessage = $"Restocked {request.Amount} rounds ({crate.Type}) from {soldier.LastName} {soldier.FirstName}. " +
+                        $"In Lot #{crate.LotNumber}. Remaining: {crate.Quantity}";
 
-            var (log, _) = OperationLog.Create("Restock", logMessage, crate.Id);
+        var log = OperationLog.Create("Restock", logMessage, crate.Id);
+        await _unitOfWork.Logs.AddAsync(log);
 
-            if (log != null)
-            {
-                await _unitOfWork.Logs.AddAsync(log);
-            }
 
-            await _unitOfWork.CompleteAsync();
-
-            return string.Empty;
-        }
-        catch (Exception ex)
-        {
-            return ex.Message;
-        }
+        await _unitOfWork.CompleteAsync();
     }
 
-    public async Task<string> AuditInventoryAsync(Guid crateId, int actualQuantity)
+    public async Task AuditInventoryAsync(Guid crateId, int actualQuantity)
     {
         var crate = await _unitOfWork.Crates.GetByIdAsync(crateId);
 
         if (crate is null)
         {
-            return "Crate is not found";
+            throw new KeyNotFoundException($"Crate with ID {crateId} not found.");
         }
 
-        try
-        {
-            int diff = actualQuantity - crate.Quantity;
+        int diff = actualQuantity - crate.Quantity;
 
-            if (diff == 0) return string.Empty;
+        if (diff == 0) return;
 
-            crate.AdjustQuantity(actualQuantity);
+        crate.AdjustQuantity(actualQuantity);
 
-            string diffSign = diff > 0 ? "+" : "";
-            var (log, _) = OperationLog.Create("Audit", $"Inventory Check. Correction: {diffSign}{diff}. New Balance: {crate.Quantity}", crate.Id);
+        string diffSign = diff > 0 ? "+" : "";
+        var log = OperationLog.Create("Audit", $"Inventory Check. Correction: {diffSign}{diff}. New Balance: {crate.Quantity}", crate.Id);
+        await _unitOfWork.Logs.AddAsync(log);
 
-            if (log != null)
-            {
-                await _unitOfWork.Logs.AddAsync(log);
-            }
 
-            await _unitOfWork.CompleteAsync();
-
-            return string.Empty;
-        }
-        catch (Exception ex)
-        {
-            return ex.Message;
-        }
+        await _unitOfWork.CompleteAsync();
     }
 
     public async Task<AmmoResponse?> GetCrateByIdAsync(Guid crateId)

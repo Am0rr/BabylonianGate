@@ -24,15 +24,15 @@ public class Soldier : Entity
         Rank = rank;
     }
 
-    public static (Soldier? Soldier, string Error) Create(string firstName, string lastName, SoldierRank rank)
+    public static Soldier Create(string firstName, string lastName, SoldierRank rank)
     {
         if (string.IsNullOrWhiteSpace(firstName))
-            return (null, "First Name is required");
+            throw new ArgumentException("First Name is required", nameof(firstName));
         if (string.IsNullOrWhiteSpace(lastName))
-            return (null, "Last Name is required");
+            throw new ArgumentException("Last Name is required", nameof(lastName));
 
 
-        return (new Soldier(firstName, lastName, rank), string.Empty);
+        return new Soldier(firstName, lastName, rank);
     }
 
     public void UpdateName(string firstName, string lastName)
