@@ -1,6 +1,7 @@
 using BG.Infra;
 using FluentValidation.AspNetCore;
 using BG.App;
+using BG.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,8 @@ builder.Services.AddApplication();
 builder.Services.AddFluentValidationAutoValidation();
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
