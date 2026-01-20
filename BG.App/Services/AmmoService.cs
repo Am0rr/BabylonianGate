@@ -85,7 +85,7 @@ public class AmmoService : IAmmoService
 
     public async Task<string> UpdateDetailsAsync(UpdateAmmoDetailsRequest request)
     {
-        var crate = await _unitOfWork.Crates.GetByIdAsync(request.CrateId);
+        var crate = await _unitOfWork.Crates.GetByIdAsync(request.Id);
 
         if (crate is null)
         {
