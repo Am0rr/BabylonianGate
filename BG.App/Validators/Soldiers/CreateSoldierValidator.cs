@@ -10,6 +10,7 @@ public class CreateSoldierValidator : AbstractValidator<CreateSoldierRequest>
     {
         RuleFor(s => s.FirstName).NotEmpty().MaximumLength(50);
         RuleFor(s => s.LastName).NotEmpty().MaximumLength(50);
-        RuleFor(s => s.Rank).IsEnumName(typeof(SoldierRank));
+        RuleFor(s => s.Rank).IsEnumName(typeof(SoldierRank), caseSensitive: false)
+                .WithMessage($"Invalid Rank. Allowed: {string.Join(", ", Enum.GetNames(typeof(SoldierRank)))}");
     }
 }
