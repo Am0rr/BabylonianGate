@@ -110,43 +110,43 @@ public class WeaponService : IWeaponService
 
     }
 
-    public async Task IssueWeaponAsync(Guid weaponId, Guid soldierId)
+    public async Task IssueWeaponAsync(IssueWeaponRequest request)
     {
-        var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
+        var weapon = await _unitOfWork.Weapons.GetByIdAsync(request.WeaponId);
 
         if (weapon is null)
         {
-            throw new KeyNotFoundException($"Weapon with ID {weaponId} not found.");
+            throw new KeyNotFoundException($"Weapon with ID {request.WeaponId} not found.");
         }
 
-        var soldier = await _unitOfWork.Soldiers.GetByIdAsync(soldierId);
+        var soldier = await _unitOfWork.Soldiers.GetByIdAsync(request.SoldierId);
 
         if (soldier is null)
         {
-            throw new KeyNotFoundException($"Soldier with ID {soldierId} not found.");
+            throw new KeyNotFoundException($"Soldier with ID {request.SoldierId} not found.");
         }
 
         weapon.IssueTo(soldier.Id);
 
         _unitOfWork.Weapons.Update(weapon);
 
-        var log = OperationLog.Create("Issue", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber} \n - Has been issued to a soldier with {soldierId} ID", weapon.Id);
+        var log = OperationLog.Create("Issue", $"Weapon {weapon.Codename}, with SN {weapon.SerialNumber} \n - Issued to {soldier.LastName} {soldier.FirstName} (ID: {soldier.Id})", weapon.Id);
         await _unitOfWork.Logs.AddAsync(log);
 
 
         await _unitOfWork.CompleteAsync();
     }
 
-    public async Task ReturnToStorageAsync(Guid weaponId, int roundsFired)
+    public async Task ReturnToStorageAsync(ReturnWeaponToStorageRequest request)
     {
-        var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
+        var weapon = await _unitOfWork.Weapons.GetByIdAsync(request.WeaponId);
 
         if (weapon is null)
         {
-            throw new KeyNotFoundException($"Weapon with ID {weaponId} not found.");
+            throw new KeyNotFoundException($"Weapon with ID {request.WeaponId} not found.");
         }
 
-        weapon.ApplyWear(roundsFired);
+        weapon.ApplyWear(request.RoundsFired);
 
         weapon.ReturnToStorage();
 
@@ -159,13 +159,13 @@ public class WeaponService : IWeaponService
         await _unitOfWork.CompleteAsync();
     }
 
-    public async Task SendToMaintenanceAsync(Guid weaponId)
+    public async Task SendToMaintenanceAsync(SendWeaponToMaintenanceRequest request)
     {
-        var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
+        var weapon = await _unitOfWork.Weapons.GetByIdAsync(request.WeaponId);
 
         if (weapon is null)
         {
-            throw new KeyNotFoundException($"Weapon with ID {weaponId} not found.");
+            throw new KeyNotFoundException($"Weapon with ID {request.WeaponId} not found.");
         }
 
         weapon.SendToMaintenance();
@@ -178,13 +178,13 @@ public class WeaponService : IWeaponService
         await _unitOfWork.CompleteAsync();
     }
 
-    public async Task ReportMissingAsync(Guid weaponId)
+    public async Task ReportMissingAsync(ReportWeaponMissingRequest request)
     {
-        var weapon = await _unitOfWork.Weapons.GetByIdAsync(weaponId);
+        var weapon = await _unitOfWork.Weapons.GetByIdAsync(request.WeaponId);
 
         if (weapon is null)
         {
-            throw new KeyNotFoundException($"Weapon with ID {weaponId} not found.");
+            throw new KeyNotFoundException($"Weapon with ID {request.WeaponId} not found.");
         }
 
         weapon.MarkAsMissing();
