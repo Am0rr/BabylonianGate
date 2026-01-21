@@ -10,7 +10,7 @@ public interface IAmmoService
     Task UpdateDetailsAsync(UpdateAmmoDetailsRequest request);
     Task IssueAmmoAsync(IssueAmmoRequest request);
     Task RestockAsync(RestockAmmoRequest request);
-    Task AuditInventoryAsync(Guid crateId, int actualQuantity);
+    Task AuditInventoryAsync(AuditAmmoInventoryRequest request);
     Task<AmmoResponse?> GetCrateByIdAsync(Guid crateId);
     Task<List<AmmoResponse>> GetAllAsync();
 }

@@ -171,20 +171,20 @@ public class AmmoService : IAmmoService
         await _unitOfWork.CompleteAsync();
     }
 
-    public async Task AuditInventoryAsync(Guid crateId, int actualQuantity)
+    public async Task AuditInventoryAsync(AuditAmmoInventoryRequest request)
     {
-        var crate = await _unitOfWork.Crates.GetByIdAsync(crateId);
+        var crate = await _unitOfWork.Crates.GetByIdAsync(request.CrateId);
 
         if (crate is null)
         {
-            throw new KeyNotFoundException($"Crate with ID {crateId} not found.");
+            throw new KeyNotFoundException($"Crate with ID {request.CrateId} not found.");
         }
 
-        int diff = actualQuantity - crate.Quantity;
+        int diff = request.ActualQuantity - crate.Quantity;
 
         if (diff == 0) return;
 
-        crate.AdjustQuantity(actualQuantity);
+        crate.AdjustQuantity(request.ActualQuantity);
 
         string diffSign = diff > 0 ? "+" : "";
         var log = OperationLog.Create("Audit", $"Inventory Check. Correction: {diffSign}{diff}. New Balance: {crate.Quantity}", crate.Id);
