@@ -186,6 +186,8 @@ public class AmmoService : IAmmoService
 
         crate.AdjustQuantity(request.ActualQuantity);
 
+        _unitOfWork.Crates.Update(crate);
+
         string diffSign = diff > 0 ? "+" : "";
         var log = OperationLog.Create("Audit", $"Inventory Check. Correction: {diffSign}{diff}. New Balance: {crate.Quantity}", crate.Id);
         await _unitOfWork.Logs.AddAsync(log);
