@@ -109,7 +109,7 @@ public class WeaponServiceTests
     }
 
     [Fact]
-    public async Task Update_Should_ModifyFields_And_Log_When_Changed()
+    public async Task Update_Should_UpdateFields_And_Log_When_Changed()
     {
         var weapon = Weapon.Create("Glock 19X", "AU-G19-X001", "9mm", WeaponType.Pistol);
         var weaponId = weapon.Id;

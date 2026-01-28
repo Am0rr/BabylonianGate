@@ -32,7 +32,7 @@ public class SoldierServiceTests
     }
 
     [Fact]
-    public async Task Create_Should_SaveSoldier_When_DataIsValid()
+    public async Task Create_Should_AddSoldier_And_Log()
     {
         var request = new CreateSoldierRequest("John", "Rimbo", "Captain");
 
@@ -55,10 +55,30 @@ public class SoldierServiceTests
     }
 
     [Fact]
+    public async Task Delete_Should_RemoveSoldier_And_Log_When_NoWeaponsAssigned()
+    {
+        var soldier = Soldier.Create("Sarah", "Connor", SoldierRank.Private);
+        var soldierId = soldier.Id;
+
+        _soldierRepoMock.Setup(r => r.GetByIdAsync(soldierId)).ReturnsAsync(soldier);
+
+        await _service.DeleteAsync(soldierId);
+
+        _soldierRepoMock.Verify(r => r.Delete(soldier), Times.Once);
+
+        _logRepoMock.Verify(l => l.AddAsync(It.Is<OperationLog>(l =>
+            l.Action == "Delete" &&
+            l.Details.Contains(soldier.LastName)
+        )), Times.Once);
+
+        _uowMock.Verify(u => u.CompleteAsync(), Times.Once);
+    }
+
+    [Fact]
     public async Task Delete_Should_Throw_When_SoldierHasWeapons()
     {
-        var soldierId = Guid.NewGuid();
         var soldier = Soldier.Create("John", "Wick", SoldierRank.General);
+        var soldierId = soldier.Id;
 
         _soldierRepoMock.Setup(r => r.GetByIdAsync(soldierId)).ReturnsAsync(soldier);
         _weaponRepoMock.Setup(r => r.HasAnyBySoldierIdAsync(soldierId)).ReturnsAsync(true);
@@ -71,10 +91,22 @@ public class SoldierServiceTests
     }
 
     [Fact]
+    public async Task Delete_Should_Throw_When_NotFound()
+    {
+        var randomId = Guid.NewGuid();
+
+        _soldierRepoMock.Setup(r => r.GetByIdAsync(randomId)).ReturnsAsync((Soldier?)null);
+
+        await _service.Invoking(s => s.DeleteAsync(randomId)).Should().ThrowAsync<KeyNotFoundException>();
+
+        _uowMock.Verify(u => u.CompleteAsync(), Times.Never);
+    }
+
+    [Fact]
     public async Task Update_Should_UpdateFields_And_Log_When_Changed()
     {
-        var soldierId = Guid.NewGuid();
         var soldier = Soldier.Create("James", "Rayan", SoldierRank.Private);
+        var soldierId = soldier.Id;
 
         _soldierRepoMock.Setup(r => r.GetByIdAsync(soldierId)).ReturnsAsync(soldier);
 
@@ -92,7 +124,43 @@ public class SoldierServiceTests
     }
 
     [Fact]
-    public async Task GetSoldierById_Should_ReturnNull_When_NotFound()
+    public async Task Update_Should_DoNothing_When_NoChanges()
+    {
+        var soldier = Soldier.Create("Alan", "Schaefer", SoldierRank.Major);
+        var soldierId = soldier.Id;
+
+        _soldierRepoMock.Setup(r => r.GetByIdAsync(soldierId)).ReturnsAsync(soldier);
+
+        var request = new UpdateSoldierRequest(soldierId, "Alan", "Schaefer", "Major");
+
+        await _service.UpdateAsync(request);
+
+        _soldierRepoMock.Verify(r => r.Update(It.IsAny<Soldier>()), Times.Never);
+
+        _logRepoMock.Verify(r => r.AddAsync(It.IsAny<OperationLog>()), Times.Never);
+
+        _uowMock.Verify(u => u.CompleteAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetById_Should_ReturnDTO_When_Found()
+    {
+        var soldier = Soldier.Create("Reinhard", "Heydrich", SoldierRank.General);
+        var soldierId = soldier.Id;
+
+        _soldierRepoMock.Setup(r => r.GetByIdAsync(soldierId)).ReturnsAsync(soldier);
+
+        var result = await _service.GetSoldierByIdAsync(soldierId);
+
+        result.Should().NotBeNull();
+
+        result!.Id.Should().Be(soldierId);
+        result.FirstName.Should().Be("Reinhard");
+        result.LastName.Should().Be("Heydrich");
+    }
+
+    [Fact]
+    public async Task GetById_Should_ReturnNull_When_NotFound()
     {
         var randomId = Guid.NewGuid();
 
@@ -101,37 +169,5 @@ public class SoldierServiceTests
         var result = await _service.GetSoldierByIdAsync(randomId);
 
         result.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task Delete_Should_Throw_KeyNotFound_When_SoldierDoesNotExist()
-    {
-        var randomId = Guid.NewGuid();
-
-        _soldierRepoMock.Setup(r => r.GetByIdAsync(randomId)).ReturnsAsync((Soldier?)null);
-
-        await _service.Invoking(s => s.DeleteAsync(randomId)).Should().ThrowAsync<KeyNotFoundException>();
-    }
-
-    [Fact]
-    public async Task Delete_Should_RemoveSoldier_And_Log_When_Noweapons()
-    {
-        var soldier = Soldier.Create("Forest", "Gump", SoldierRank.Colonel);
-        var soldierId = soldier.Id;
-
-        _soldierRepoMock.Setup(r => r.GetByIdAsync(soldierId)).ReturnsAsync(soldier);
-
-        _weaponRepoMock.Setup(r => r.HasAnyBySoldierIdAsync(soldierId)).ReturnsAsync(false);
-
-        await _service.DeleteAsync(soldierId);
-
-        _soldierRepoMock.Verify(r => r.Delete(soldier), Times.Once);
-
-        _logRepoMock.Verify(l => l.AddAsync(It.Is<OperationLog>(l =>
-            l.Action == "Delete" &&
-            l.Details.Contains(soldier.LastName)
-        )), Times.Once);
-
-        _uowMock.Verify(u => u.CompleteAsync(), Times.Once);
     }
 }
