@@ -126,7 +126,7 @@ public class AmmoTests
         Action act = () => crate.CorrectCaliber(" ");
 
         act.Should().Throw<ArgumentException>()
-            .WithMessage("Caliber cannot be empty");
+            .WithMessage("Caliber cannot be empty.");
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public class AmmoTests
         Action act = () => crate.CorrectLotNumber(" ");
 
         act.Should().Throw<ArgumentException>()
-            .WithMessage("Lot Number cannot be empty");
+            .WithMessage("Lot Number cannot be empty.");
     }
 
     [Fact]
