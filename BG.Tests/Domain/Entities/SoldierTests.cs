@@ -15,9 +15,9 @@ public class SoldierTests
 
         var soldier = Soldier.Create(firstName, lastName, rank);
 
-        soldier.FirstName.Should().Be("Benjamin");
-        soldier.LastName.Should().Be("Poindexter");
-        soldier.Rank.Should().Be(SoldierRank.Captain);
+        soldier.FirstName.Should().Be(firstName);
+        soldier.LastName.Should().Be(lastName);
+        soldier.Rank.Should().Be(rank);
     }
 
     [Theory]
