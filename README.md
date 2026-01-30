@@ -14,7 +14,7 @@ The system facilitates the management of personnel, weaponry, and ammunition, en
 
 ## 🛠️ Tech Stack
 
-- **Platform**: .NET 8 (ASP.NET Core Web API)
+- **Platform**: .NET 10 (ASP.NET Core Web API)
 - **Database**: PostgreSQL / Entity Framework Core
 - **Validation**: FluentValidation
 - **Testing**: xUnit, Moq, FluentAssertions
@@ -67,8 +67,8 @@ The project is in active development, focusing on high code quality and architec
 - [x] **Domain Logic**: "Always Valid" entities & Domain Services.
 - [x] **API Layer**: Controllers, Middleware, DTOs.
 - [x] **Validation**: FluentValidation integration.
-- [x] **Unit Testing**: Infrastructure setup & Service coverage.
-- [ ] **Integration Testing**: API endpoint testing.
+- [x] **Unit Testing**: Full coverage for Domain Entities & Application Services (98 tests).
+- [ ] **Frontend Client**.
 
 ---
 
