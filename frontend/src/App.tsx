@@ -1,16 +1,18 @@
 import {Sidebar} from './components/Sidebar';
+import { Header } from './components/Header';
 
 function App() {
   return (
     <div className = "flex min-h-screen bg-[#050505] text-white fot-mono">
       <Sidebar />
-
-      <main className = "flex-1 p-10 flex flex-col items-center justify-center text-gray-500">
-        <div className = "border border-dashed border-gray-700 p-10 rounded-lg text-center">
-          <h2 className = "text-2x1 font-bold text-white mb-2">Work in Progress</h2>
-          <p>A table of weapons will be available here soon...</p>
-        </div>
-      </main>
+      <div className="flex-1 flex flex-col relative overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-y-auto p-8">
+            <div className="mt-8 border border-dashed border-white/10 rounded h-96 flex items-center justify-center text-gray-600 uppercase tracking-widest text-sm">
+                Inventory Table Area
+            </div>
+        </main>
+      </div>
     </div>
   )
 }
