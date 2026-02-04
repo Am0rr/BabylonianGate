@@ -1,5 +1,6 @@
 import {Sidebar} from './components/Sidebar';
 import { Header } from './components/Header';
+import { StatsBanner } from './components/StatsBanner';
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <div className="flex-1 flex flex-col relative overflow-hidden">
         <Header />
         <main className="flex-1 overflow-y-auto p-8">
+            <StatsBanner />
             <div className="mt-8 border border-dashed border-white/10 rounded h-96 flex items-center justify-center text-gray-600 uppercase tracking-widest text-sm">
                 Inventory Table Area
             </div>
