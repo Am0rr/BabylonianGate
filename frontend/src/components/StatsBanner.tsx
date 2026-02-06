@@ -7,8 +7,11 @@ import {
   Wrench, 
   Crosshair
 } from 'lucide-react';
+import type { DashboardStats } from '../types/types';
 
 interface StatsBannerProps {
+    stats: DashboardStats;       
+    isLoading: boolean;
     onFilterClick?: (filter: string) => void;
 }
 
