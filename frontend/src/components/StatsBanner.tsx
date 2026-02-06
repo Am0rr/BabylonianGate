@@ -25,22 +25,24 @@ export const StatsBanner = ({ onFilterClick }: StatsBannerProps) => {
             className="p-6 cursor-pointer hover:bg-white/[0.03] transition-colors relative group"
         >
             <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-emerald-500/10 rounded-md text-emerald-500">
-                    <FolderCheck size={20} />
+                <div className="p-2.5 bg-emerald-500/10 rounded-md text-emerald-500">
+                    <FolderCheck size={30} />
                 </div>
                 <div>
-                    <h3 className="text-sm font-bold text-white tracking-wider uppercase">Storage</h3>
+                    <h3 className="text-[20px] font-bold text-white tracking-wider uppercase">Storage</h3>
                     <p className="text-xs text-gray-400">Ready for deployment</p>
                 </div>
             </div>
 
-            <div className="flex items-end gap-3">
-                <span className="text-4xl font-bold text-white font-mono leading-none">154</span>
-                <div className="mb-1 flex items-center gap-2">
-                    <span className="text-sm font-bold text-emerald-500">84%</span>
-                    <span className="text-xs text-gray-500 uppercase font-medium">of Total Arsenal</span>
-                </div>
-            </div>
+        <div className="flex items-baseline gap-3">
+            <span className="text-4xl font-bold text-white font-mono leading-none">154</span>
+
+        <div className="flex items-baseline gap-2">
+            <span className="text-[14px] font-bold text-emerald-500 leading-none">84%</span>
+
+            <span className="text-[12px] text-gray-500 font-bold uppercase tracking-wider leading-none">of Total Arsenal</span>
+    </div>
+</div>
             
             <div className="w-full bg-gray-800 h-1.5 mt-4 rounded-full overflow-hidden">
                 <div className="bg-emerald-500 h-full w-[84%]"></div>
@@ -49,11 +51,11 @@ export const StatsBanner = ({ onFilterClick }: StatsBannerProps) => {
 
         <div className="p-6 relative hover:bg-white/[0.01] transition-colors">
              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-amber-500/10 rounded-md text-amber-500">
-                    <FolderClock size={20} />
+                <div className="p-2.5 bg-amber-500/10 rounded-md text-amber-500">
+                    <FolderClock size={30} />
                 </div>
                 <div>
-                    <h3 className="text-sm font-bold text-white tracking-wider uppercase">Operational Overview</h3>
+                    <h3 className="text-[20px] font-bold text-white tracking-wider uppercase">Operational Overview</h3>
                     <p className="text-xs text-gray-400">Asset distribution status</p>
                 </div>
             </div>
@@ -64,8 +66,8 @@ export const StatsBanner = ({ onFilterClick }: StatsBannerProps) => {
                     className="group/stat cursor-pointer"
                 >
                     <span className="text-4xl font-bold text-amber-500 font-mono leading-none drop-shadow-[0_0_8px_rgba(242, 121, 53)]">03</span>
-                    <div className="text-[10px] uppercase font-bold text-amber-400 mt-1 flex items-center gap-1">
-                         Deployed <Crosshair size={10} />
+                    <div className="text-[12px] uppercase font-bold text-amber-400 mt-1 flex items-center gap-1">
+                         Deployed <Crosshair size={12} />
                     </div>
                 </div>
             
@@ -76,8 +78,8 @@ export const StatsBanner = ({ onFilterClick }: StatsBannerProps) => {
                     className="group/stat cursor-pointer"
                 >
                     <span className="text-4xl font-bold text-blue-500 font-mono leading-none drop-shadow-[0_0_8px_rgba(242, 121, 53)]">03</span>
-                    <div className="text-[10px] uppercase font-bold text-blue-400 mt-1 flex items-center gap-1">
-                         Repairing <Wrench size={10} />
+                    <div className="text-[12px] uppercase font-bold text-blue-400 mt-1 flex items-center gap-1">
+                         Repairing <Wrench size={12} />
                     </div>
                 </div>
 
@@ -88,8 +90,8 @@ export const StatsBanner = ({ onFilterClick }: StatsBannerProps) => {
                     className="group/stat cursor-pointer relative"
                 >
                     <span className="text-4xl font-bold text-rose-500 font-mono leading-none drop-shadow-[0_0_8px_rgba(244,63,94,0.3)]">03</span>
-                    <div className="text-[10px] uppercase font-bold text-rose-400 mt-1 flex items-center gap-1">
-                         Missing <AlertCircle size={10} />
+                    <div className="text-[12px] uppercase font-bold text-rose-400 mt-1 flex items-center gap-1">
+                         Missing <AlertCircle size={12} />
                     </div>
                 </div>
             </div>
@@ -101,11 +103,11 @@ export const StatsBanner = ({ onFilterClick }: StatsBannerProps) => {
         >
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-500/10 rounded-md text-blue-500"> 
-                        <Folders size={20} />
+                    <div className="p-2.5 bg-blue-500/10 rounded-md text-blue-500"> 
+                        <Folders size={30} />
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-white tracking-wider uppercase">Munitions</h3>
+                        <h3 className="text-[20px] font-bold text-white tracking-wider uppercase">Munitions</h3>
                         <p className="text-xs text-gray-400">Total Supply</p>
                     </div>
                 </div>
@@ -114,15 +116,18 @@ export const StatsBanner = ({ onFilterClick }: StatsBannerProps) => {
                 </div>
             </div>
 
-            <div className="flex gap-4 mt-2 items-end">
+            <div className="flex gap-4 mt-4 items-end"> 
                 <div>
-                    <span className="text-4xl font-bold text-white font-mono leading-none">42.3K</span>
-                    <div className="text-[10px] uppercase font-bold text-gray-500 mt-1">Total Rounds</div>
+                    <span className="text-4xl font-bold text-white font-mono leading-none">42300</span>
+                    <div className="text-[12px] uppercase font-bold text-gray-500 mt-2 tracking-wider flex items-center justify-center">Total Rounds</div>
                 </div>
-                <div className="h-8 w-px bg-white/10 mb-1"></div>
-                <div className="mb-0.5">
-                    <span className="text-xl font-bold text-white font-mono leading-none text-blue-200">15</span>
-                    <div className="text-[10px] uppercase font-bold text-blue-400 mt-1">Crates</div>
+
+
+            <div className="w-px h-10 bg-white/20 self-center mx-1"></div>
+
+                <div className="flex flex-col justify-end">
+                    <span className="text-4xl font-bold text-blue-200 font-mono leading-none">15</span>
+                    <div className="text-[12px] uppercase font-bold text-blue-500 mt-2 tracking-wider">Crates</div>
                 </div>
             </div>
         </div>
@@ -133,11 +138,11 @@ export const StatsBanner = ({ onFilterClick }: StatsBannerProps) => {
         >
              <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-violet-500/10 rounded-md text-violet-400">
-                        <FolderHeart size={20} />
+                    <div className="p-2.5 bg-violet-500/10 rounded-md text-violet-400">
+                        <FolderHeart size={30} />
                     </div>
                     <div>
-                        <h3 className="text-sm font-bold text-white tracking-wider uppercase">Personnel</h3>
+                        <h3 className="text-[20px] font-bold text-white tracking-wider uppercase">Personnel</h3>
                         <p className="text-xs text-gray-400">Armed Units</p>
                     </div>
                 </div>

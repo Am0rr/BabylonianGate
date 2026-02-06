@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
-import { Header } from './components/Header';
 import { StatsBanner } from './components/StatsBanner';
 import { SearchBar } from './components/SearchBar';
 import type { DashboardStats } from './types/types';
@@ -41,7 +40,6 @@ function App() {
       <Sidebar />
       
       <div className="flex-1 flex flex-col relative overflow-hidden">
-        <Header />
         
         <main className="flex-1 overflow-y-auto p-8">
             <StatsBanner 
